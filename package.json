@@ -3,5 +3,8 @@
   "version": "4.0.0",
   "description": "Free FBISE notes and books for Federal Board Pakistan - Class 9-12 (static site + Firebase backend)",
   "private": true,
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@vercel/analytics": "^2.0.1"
+  }
 }
