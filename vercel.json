@@ -104,5 +104,13 @@
         }
       ]
     }
-  ]
+  ],
+  "functions": {
+    "api/pdf-proxy.js": {
+      "maxDuration": 30
+    },
+    "api/pdf-ai.js": {
+      "maxDuration": 30
+    }
+  }
 }

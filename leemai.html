@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <script src="/icons.js"></script>
+<script src="/leem-limit.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LeemAI – FBISE AI Study Assistant | StudyLeem</title>
@@ -317,6 +318,8 @@
 }
 
 /* Input bar */
+.sl-limit-note{text-align:center;font-size:.78rem;color:#64748b;padding:.45rem 1rem 0;background:#fff}
+.sl-limit-note.sl-locked{color:#b45309;font-weight:600}
 .chat-input-bar {
   background: white;
   border-top: 1px solid var(--border);
@@ -554,6 +557,7 @@
       </div>
 
       <!-- Input bar -->
+      <div id="limitNote" class="sl-limit-note"></div>
       <div class="chat-input-bar">
         <textarea
           id="chatInput"
@@ -639,6 +643,7 @@
 
 <script>
 // ── CONFIG ────────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => { window._limNote = LeemLimit.note(document.getElementById('limitNote'), st => { const b = document.getElementById('sendBtn'); if (b) b.title = st.locked ? 'Free limit reached' : ''; }); });
 const LEEMAI_API = ""; // same-origin: handled by /api/ask (Vercel function -> Gemini)
 // Warmup: start loading model as soon as page opens
 
@@ -689,6 +694,12 @@ async function sendMessage() {
 
   const sendBtn = document.getElementById('sendBtn');
 
+  // free limit: 4 messages, then a 5-minute break (tracked in this browser)
+  const lim = LeemLimit.status();
+  if (lim.locked) { LeemLimit.note(document.getElementById('limitNote')).refresh(); return; }
+  if (!LeemLimit.consume()) return;
+  window._limNote && window._limNote.refresh();
+
   // Remove welcome state
   const welcome = document.getElementById('welcomeState');
   if (welcome) welcome.remove();
@@ -714,10 +725,12 @@ async function sendMessage() {
       appendMessage('ai', res.status === 404
         ? 'LeemAI service was not found on this site (HTTP 404). The api/ask.js file is not deployed correctly.'
         : 'LeemAI server returned an unexpected response (HTTP ' + res.status + '). Check the function logs in Vercel.');
+      LeemLimit.refund(); window._limNote && window._limNote.refresh();
       sendBtn.disabled = false; chatInput.focus(); return;
     }
 
     if (!res.ok) {
+      LeemLimit.refund(); window._limNote && window._limNote.refresh();
       appendMessage('ai', '' + (data.detail || 'Something went wrong. Please try again.'));
     } else if (data.fallback && !data.model_ready) {
       appendMessage('ai', 'LeemAI is still waking up (first load takes ~30s). ' + data.answer);
@@ -729,6 +742,7 @@ async function sendMessage() {
 
   } catch (err) {
     removeTyping(typingId);
+    LeemLimit.refund(); window._limNote && window._limNote.refresh();
     appendMessage('ai', 'Could not connect to LeemAI. Please check your internet connection and try again.');
   }
 

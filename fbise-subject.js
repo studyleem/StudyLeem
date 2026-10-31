@@ -89,7 +89,6 @@
         <a href="/fbise/${type}/${cls}/${s.slug}" class="subject-card">
           <h3>${escHtml(s.name)}</h3>
           <p>Class ${cls} · FBISE</p>
-          <p>${s.count} ${type === 'books' ? 'Book(s)' : 'Chapter(s)'}</p>
         </a>
       `).join('');
 

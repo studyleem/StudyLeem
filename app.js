@@ -133,7 +133,6 @@ function loadPopularSubjects(materials) {
     <a href="/fbise/notes/${s.class}/${s.slug}" class="subject-card">
       <h3>${escHtml(s.subject)}</h3>
       <p>Class ${s.class} · FBISE</p>
-      <p>${s.count} material${s.count !== 1 ? 's' : ''}</p>
     </a>
   `).join('');
 }

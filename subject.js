@@ -115,16 +115,9 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// Navigate to the dedicated PDF preview page
+// Open the PDF viewer inside this page (no page change)
 window.openPreview = function(title, url) {
-    if (!url) {
-        alert('PDF link not available for this material.');
-        return;
-    }
-    const backUrl = window.location.pathname + window.location.search;
-    const previewUrl = '/pdf-preview'
-        + '?title=' + encodeURIComponent(title)
-        + '&url='   + encodeURIComponent(url)
-        + '&back='  + encodeURIComponent(backUrl);
-    window.location.href = previewUrl;
+    if (!url) { alert('PDF link not available for this material.'); return; }
+    if (window.StudyPDF) { StudyPDF.openModal(title, url); return; }
+    window.location.href = '/pdf-preview?title=' + encodeURIComponent(title) + '&url=' + encodeURIComponent(url) + '&back=' + encodeURIComponent(location.pathname + location.search);
 };

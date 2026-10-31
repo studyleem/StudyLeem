@@ -75,7 +75,7 @@ async function initPage(classNum) {
                 <a href="/subject?class=${classNum}&subject=${encodeURIComponent(subject)}" class="subject-card">
                     <h3>${escapeHtml(subject)}</h3>
                     <p>Class ${classNum}</p>
-                    <p>${counts.books} Books • ${counts.notes} Notes</p>
+                    <p>${counts.books && counts.notes ? 'Notes & Books' : counts.books ? 'Books' : 'Notes'}</p>
                 </a>
             `;
         }).join('');
