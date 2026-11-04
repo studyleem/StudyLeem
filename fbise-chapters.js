@@ -98,7 +98,7 @@
               <h3 class="chapter-title">${escHtml(m.title)}</h3>
               ${m.description ? `<p class="chapter-desc">${escHtml(m.description.substring(0,120))}${m.description.length>120?'…':''}</p>` : ''}
             </div>
-            <div class="chapter-arrow">${ic('arrow-right')}</div>
+            <span class="chapter-cta">Read Book ${ic('arrow-right')}</span>
           </a>
         `;
       }).join('');
@@ -124,7 +124,7 @@
             <h3 class="chapter-title">${escHtml(m.title)}</h3>
             ${m.description ? `<p class="chapter-desc">${escHtml(m.description.substring(0,100))}${m.description.length>100?'…':''}</p>` : ''}
           </div>
-          <div class="chapter-arrow">${ic('arrow-right')}</div>
+          <span class="chapter-cta">${isEx ? 'Open Exercise' : 'Notes + Exercise'} ${ic('arrow-right')}</span>
         </a>
       `;
     }).join('');
@@ -139,6 +139,62 @@
         renderItems(items);
       };
     });
+  }
+
+
+  // ── Study++-style information blocks under the chapter list (Quick Answer, features, steps, related, FAQ) ──
+  async function renderInfo(type, cls, subjectName) {
+    const box = document.getElementById('subjectInfo');
+    if (!box) return;
+    const { subjectSlug } = parsePath();
+    const isBook = type === 'books', kind = isBook ? 'Book' : 'Notes', S = escHtml(subjectName), C = escHtml(cls);
+    const box2 = (icon, h, p) => `<div class="sp-box">${ic(icon)}<h3>${h}</h3><p>${p}</p></div>`;
+    const faq = [
+      [`Are these ${S} ${kind.toLowerCase()} for the FBISE Federal Board?`, `Yes. This page is for Class ${C} ${S} students following the Federal Board (FBISE) syllabus in Pakistan. Always check the latest syllabus notification from your college or the board.`],
+      ['Can I read the PDF online?', 'Yes. Open any item to read it inside the site with the built-in viewer. You can zoom, jump to a page and use fullscreen on mobile and desktop.'],
+      ['Can I download the PDF?', 'Yes. Use the Download button on the viewer page. It starts after a short countdown.'],
+      ['What is Ask LeemAI?', 'LeemAI is the built-in study assistant. While a PDF is open, it can summarize the page you are on, explain it in simple words, or answer your question about it. You get 4 free messages, then a 5-minute break, with no account needed.'],
+      ['Are these materials enough for exam preparation?', 'They are meant to support your learning and revision. Read the official textbook as well, and practise with past papers and model papers.'],
+      ['Is StudyLeem free?', 'Yes. All study materials on StudyLeem are free and need no registration.']
+    ].map(([q, a]) => `<details><summary>${q}</summary><p>${a}</p></details>`).join('');
+
+    box.innerHTML = `
+      <h2>Quick Answer</h2>
+      <div class="sp-quick">The <b>Class ${C} ${S} ${kind}</b> page gives FBISE students ${isBook ? 'the full textbook PDF' : 'chapter-wise study material'} for ${S}. Open any item to read it online, download the PDF, or ask LeemAI to summarize the page you are reading.
+        <div class="sp-chips"><span class="sp-chip2">Federal Board</span><span class="sp-chip2">Class ${C}</span><span class="sp-chip2">${S}</span><span class="sp-chip2">${isBook ? 'Full Textbook' : 'Chapter-Wise'}</span><span class="sp-chip2">Free PDF</span><span class="sp-chip2">AI Summaries</span></div>
+      </div>
+      <h2>What you get</h2>
+      <div class="sp-grid">
+        ${box2('notes', isBook ? 'Complete textbook' : 'Chapter-wise notes', isBook ? 'The whole book as one PDF, ready to read online.' : 'Each chapter is a separate PDF so you can jump straight to the topic you need.')}
+        ${box2('calculator', 'Exercise solutions', 'Where available, exercises are uploaded one by one so you can open the exact exercise.')}
+        ${box2('eye', 'Online viewer', 'Read in your browser with zoom, page jump and fullscreen. No app needed.')}
+        ${box2('sparkles', 'AI page summary', 'Ask LeemAI to summarize or explain the page you have open.')}
+        ${box2('download', 'PDF download', 'Save the PDF to your phone or computer for offline revision.')}
+        ${box2('check-circle', '100% free', 'No account, no payment. Just open and study.')}
+      </div>
+      <h2>How to prepare ${S}</h2>
+      <ol class="sp-steps">
+        <li><div><b>Read the textbook chapter first</b><span>Understand the topic, examples and diagrams before using notes.</span></div></li>
+        <li><div><b>Revise with the notes</b><span>Use the chapter PDF for key definitions, formulas and short answers.</span></div></li>
+        <li><div><b>Solve the exercises</b><span>Try each question yourself, then compare with the solved exercise.</span></div></li>
+        <li><div><b>Use LeemAI for hard pages</b><span>Open a page you find difficult and ask for a summary or a simpler explanation.</span></div></li>
+        <li><div><b>Practise past papers</b><span>Finish with model papers and past papers before your exams.</span></div></li>
+      </ol>
+      <div id="relatedBox"></div>
+      <h2>Frequently Asked Questions</h2>
+      <div class="sp-faq">${faq}</div>
+      <p class="sp-notice"><b>Educational notice:</b> This content is provided for educational support only. It is not for sale or commercial use. StudyLeem does not claim ownership of any official government textbook material.</p>`;
+
+    try {
+      const all = await DB.getByClass(cls);
+      const seen = {}, links = [];
+      all.forEach(m => {
+        const slug = m.subjectSlug || toSlug(m.subject || '');
+        const k = m.type + slug;
+        if (slug && !seen[k] && !(m.type === type && slug === subjectSlug)) { seen[k] = 1; links.push(`<a href="/fbise/${m.type === 'books' ? 'books' : 'notes'}/${cls}/${slug}">Class ${C} ${escHtml(m.subject)} (${m.type === 'books' ? 'Book' : 'Notes'})</a>`); }
+      });
+      if (links.length) document.getElementById('relatedBox').innerHTML = `<h2>Related resources</h2><div class="sp-rel">${links.slice(0, 12).join('')}</div>`;
+    } catch (e) { console.warn(e); }
   }
 
   async function loadChapters(type, cls, subjectSlug) {
@@ -156,6 +212,7 @@
       // Get real subject name from first item
       const subjectName = allItems[0].subject || subjectSlug;
       setMeta(type, cls, subjectSlug, subjectName);
+      renderInfo(type, cls, subjectName);
 
       if (type === 'notes') {
         const hasExercise = allItems.some(m => m.contentType === 'exercise');

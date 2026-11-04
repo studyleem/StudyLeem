@@ -118,23 +118,30 @@ function loadLatestMaterials(materials) {
 }
 
 function loadPopularSubjects(materials) {
-  const container = document.getElementById('subjectsGrid');
-  if (!container) return;
-  const subjectMap = {};
-  materials.forEach(m => {
-    const slug = m.subjectSlug || toSlug(m.subject || '');
-    const key  = `${m.class}-${slug}`;
-    if (!subjectMap[key]) subjectMap[key] = { class: m.class, subject: m.subject, slug, count: 0 };
-    subjectMap[key].count++;
-  });
-  const subjects = Object.values(subjectMap).sort((a, b) => b.count - a.count).slice(0, 8);
-  if (!subjects.length) { container.innerHTML = '<p class="loading">No subjects yet.</p>'; return; }
-  container.innerHTML = subjects.map(s => `
-    <a href="/fbise/notes/${s.class}/${s.slug}" class="subject-card">
-      <h3>${escHtml(s.subject)}</h3>
-      <p>Class ${s.class} · FBISE</p>
-    </a>
-  `).join('');
+  // two rows (notes / books): up to 6 subjects each, spread across classes 12 -> 9
+  const fill = (id, type) => {
+    const box = document.getElementById(id);
+    if (!box) return;
+    const map = {};
+    materials.filter(m => m.type === type).forEach(m => {
+      const slug = m.subjectSlug || toSlug(m.subject || '');
+      const key = `${m.class}-${slug}`;
+      if (!map[key]) map[key] = { class: String(m.class), subject: m.subject, slug, count: 0 };
+      map[key].count++;
+    });
+    const byClass = {};
+    Object.values(map).forEach(s => (byClass[s.class] = byClass[s.class] || []).push(s));
+    Object.values(byClass).forEach(a => a.sort((x, y) => y.count - x.count));
+    const order = ['12', '11', '10', '9'], picked = [];
+    for (let round = 0; picked.length < 6 && round < 6; round++) {
+      order.forEach(c => { if (picked.length < 6 && byClass[c] && byClass[c][round]) picked.push(byClass[c][round]); });
+    }
+    box.innerHTML = picked.length
+      ? picked.map(s => spCard(`/fbise/${type}/${s.class}/${s.slug}`, s.class, s.subject, type === 'books' ? 'FBISE Book' : 'FBISE Notes')).join('')
+      : `<p class="loading">No ${type} yet.</p>`;
+  };
+  fill('notesRow', 'notes');
+  fill('booksRow', 'books');
 }
 
 function updateStats(materials) {

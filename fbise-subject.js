@@ -85,12 +85,7 @@
 
       const subjects = Object.values(subjMap).sort((a, b) => a.name.localeCompare(b.name));
 
-      grid.innerHTML = subjects.map(s => `
-        <a href="/fbise/${type}/${cls}/${s.slug}" class="subject-card">
-          <h3>${escHtml(s.name)}</h3>
-          <p>Class ${cls} · FBISE</p>
-        </a>
-      `).join('');
+      grid.innerHTML = subjects.map(s => spCard(`/fbise/${type}/${cls}/${s.slug}`, cls, s.name, type === 'books' ? 'FBISE Book' : 'FBISE Notes')).join('');
 
     } catch (err) {
       console.error(err);

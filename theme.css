@@ -1,0 +1,148 @@
+/* ═══════════════════════════════════════════════════════════════
+   StudyLeem — "Study++" inspired theme (loads after styles.css + pro.css)
+   Clean white pages · light-blue bands · bold black headings · tile rows · minimal footer
+   ═══════════════════════════════════════════════════════════════ */
+:root{
+  --band:#dbf3ff;--band-2:#eaf8ff;--ink:#0b1220;--muted:#5b6b7f;--line:#e3ecf5;
+  --primary:#2563eb;--primary-dark:#1d4ed8;--orange:#f97316;--canvas:#fff;
+  --r:16px;--sh-sm:0 1px 2px rgba(11,18,32,.05),0 1px 3px rgba(11,18,32,.06);--sh-md:0 10px 28px -10px rgba(11,18,32,.18);
+}
+body{background:#fff;color:var(--ink);font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif}
+h1,h2,h3,h4,.hero-title,.section-title{font-family:'Inter',system-ui,sans-serif;color:var(--ink);letter-spacing:-.025em;font-weight:800}
+.container{max-width:1180px}
+
+/* ── Header: clean white, logo + simple nav ── */
+.header{background:rgba(255,255,255,.92);border-bottom:1px solid var(--line);box-shadow:none}
+.header-content{min-height:68px}
+.logo-text{font-family:'Poppins',sans-serif;font-weight:700}
+.nav{gap:.15rem}
+.nav-link{position:relative;border-radius:10px;padding:.5rem .85rem;font-weight:600;font-size:.93rem;color:#334155;background:transparent!important}
+.nav-link:hover{color:var(--primary);background:var(--band-2)!important}
+.nav-link.active{color:var(--primary-dark);background:var(--band)!important}
+.mobile-menu{border-bottom:1px solid var(--line)}
+
+/* ── Hero → light-blue band, dark text ── */
+.hero{background:linear-gradient(180deg,var(--band) 0%,var(--band-2) 100%);color:var(--ink);padding:clamp(2.2rem,5vw,3.6rem) 0 clamp(2rem,4vw,3rem);border-bottom:1px solid #cfe9f7}
+.hero-wave{display:none}
+.hero-title{color:var(--ink);font-size:clamp(1.9rem,4.4vw,3rem);font-weight:800;line-height:1.1;text-wrap:balance}
+.hero-subtitle{color:#33475b;opacity:1;max-width:680px;margin-inline:auto}
+.hero-search{max-width:640px;margin-inline:auto}
+.hero-search input,#searchInput{background:#fff;border:1.5px solid #bfdff2;border-radius:14px;box-shadow:var(--sh-sm);padding-block:.95rem;color:var(--ink)}
+.hero-search input:focus,#searchInput:focus{border-color:var(--primary);box-shadow:0 0 0 4px rgba(37,99,235,.15)}
+.search-btn{border-radius:12px}
+.btn-leemai{display:inline-flex;align-items:center;gap:.5rem;background:var(--ink);color:#fff;padding:.7rem 1.4rem;border-radius:12px;font-weight:700;font-size:.93rem;text-decoration:none;transition:transform .15s,box-shadow .2s}
+.btn-leemai:hover{transform:translateY(-1px);box-shadow:var(--sh-md)}.btn-leemai .ic{color:#fb923c}
+.hero-point{background:#fff;border:1px solid #c6e4f5;color:#25405a;backdrop-filter:none}
+.hero-point .ic{color:var(--primary)}
+
+/* ── Section headers with "Click More" ── */
+.section{padding-block:clamp(1.8rem,4vw,3rem);background:#fff}
+.section-title{font-size:clamp(1.3rem,2.6vw,1.75rem)}
+.section-subtitle{color:var(--muted)}
+.sp-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1.1rem;flex-wrap:wrap}
+.sp-head h2{margin:0;font-size:clamp(1.25rem,2.6vw,1.65rem)}
+.sp-more{display:inline-flex;align-items:center;gap:.35rem;padding:.45rem .95rem;border:1.5px solid var(--ink);border-radius:999px;color:var(--ink);font-weight:700;font-size:.85rem;text-decoration:none;transition:.2s}
+.sp-more:hover{background:var(--ink);color:#fff}
+
+/* ── Tile cards (home rows, class pages, subject lists) ── */
+.sp-row,.subjects-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:1rem}
+.sp-card{display:flex;flex-direction:column;background:#fff;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh-sm);text-decoration:none;color:var(--ink);transition:transform .25s cubic-bezier(.2,.7,.2,1),box-shadow .25s,border-color .25s}
+.sp-card:hover{transform:translateY(-4px);box-shadow:var(--sh-md);border-color:#bcd9ee}
+.sp-tile{position:relative;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;color:#fff;background:linear-gradient(135deg,var(--g1,#2563eb),var(--g2,#1d4ed8))}
+.sp-tile::after{content:"";position:absolute;inset:0;background:radial-gradient(120px 90px at 85% 10%,rgba(255,255,255,.28),transparent 70%)}
+.sp-tile .ic{width:2.6rem;height:2.6rem;position:relative;z-index:1;filter:drop-shadow(0 2px 6px rgba(0,0,0,.2))}
+.sp-badge{position:absolute;left:.6rem;top:.6rem;z-index:1;background:rgba(255,255,255,.95);color:var(--ink);font-size:.7rem;font-weight:700;padding:.2rem .55rem;border-radius:999px}
+.sp-cap{padding:.7rem .85rem .9rem}
+.sp-cap small{display:block;color:var(--muted);font-weight:600;font-size:.72rem;text-transform:uppercase;letter-spacing:.04em}
+.sp-cap b{display:block;font-size:.98rem;font-weight:700;margin-top:.1rem;line-height:1.25}
+/* legacy subject-card fallback */
+.subject-card{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:1rem;box-shadow:var(--sh-sm)}
+
+/* ── Class picker ── */
+.classes-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:.9rem}
+.class-card{display:flex;align-items:center;gap:.9rem;text-align:left;padding:1rem 1.1rem;border-radius:var(--r);background:#fff;border:1px solid var(--line)}
+.class-card h3{margin:0;font-size:1rem}.class-card p{margin:.15rem 0 0;color:var(--muted);font-size:.8rem}
+.class-icon{flex:none;width:52px;height:52px;border-radius:14px;background:var(--band);color:var(--primary-dark);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.2rem;margin:0}
+.class-card:hover .class-icon{background:var(--primary);color:#fff}
+
+/* ── Material cards (latest uploads) ── */
+.materials-grid{grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:1rem}
+.material-card{border-radius:var(--r)}
+.material-title{font-size:.92rem;font-weight:700}
+
+/* ── Page header band + breadcrumb ── */
+.page-header{background:linear-gradient(180deg,var(--band),var(--band-2));border-bottom:1px solid #cfe9f7;padding:1.6rem 0 1.7rem}
+.page-header h1{color:var(--ink);font-size:clamp(1.6rem,3.6vw,2.4rem);margin:.4rem 0 .3rem}
+.page-header p{color:#33475b;max-width:760px}
+.breadcrumb{font-size:.85rem;color:#4a627a}.breadcrumb a{color:var(--primary-dark);font-weight:600}
+.breadcrumb span{margin:0 .15rem;color:#8aa2b8}
+.type-switch-btn,.tab-btn{border-radius:999px;border:1.5px solid var(--line);background:#fff;color:#334155;font-weight:700}
+.type-switch-btn.active,.tab-btn.active{background:var(--ink);color:#fff;border-color:var(--ink);box-shadow:none}
+
+/* ── Chapter cards ── */
+.chapters-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:1rem}
+.chapter-item{display:flex;flex-direction:column;align-items:flex-start;gap:.55rem;padding:1.15rem 1.2rem;border-radius:var(--r);background:#fff;border:1px solid var(--line);box-shadow:var(--sh-sm);height:100%}
+.chapter-item:hover{transform:translateY(-3px);box-shadow:var(--sh-md);border-color:#bcd9ee}
+.chapter-num{display:inline-flex;align-items:center;gap:.4rem;background:var(--band);color:var(--primary-dark);font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:.25rem .65rem;border-radius:999px;margin:0;min-width:0}
+.chapter-info{flex:1}
+.chapter-title{font-size:1.08rem;font-weight:700;margin:0;line-height:1.3}
+.chapter-desc{color:var(--muted);font-size:.88rem;line-height:1.55;margin:.35rem 0 0}
+.chapter-arrow{display:none}
+.chapter-cta{display:inline-flex;align-items:center;gap:.4rem;background:var(--ink);color:#fff;font-weight:700;font-size:.82rem;padding:.5rem .95rem;border-radius:10px;transition:.2s}
+.chapter-item:hover .chapter-cta{background:var(--primary)}
+
+/* ── Feature cards ── */
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1rem}
+.feature-card{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:1.3rem;text-align:left}
+.feature-icon{width:46px;height:46px;border-radius:12px;background:var(--band);color:var(--primary-dark);display:flex;align-items:center;justify-content:center;font-size:1.3rem;margin-bottom:.8rem}
+.feature-card h3{font-size:1.02rem;margin:0 0 .35rem}.feature-card p{color:var(--muted);font-size:.9rem;margin:0}
+
+/* ── Info blocks on subject pages (Quick Answer, steps, FAQ) ── */
+.sp-info{max-width:900px}
+.sp-info h2{font-size:clamp(1.25rem,2.4vw,1.55rem);margin:2.2rem 0 .8rem}
+.sp-quick{background:#f0f9ff;border:1px solid #bfe3f7;border-left:5px solid var(--primary);border-radius:14px;padding:1.1rem 1.3rem;color:#1e3448;line-height:1.7}
+.sp-chips{display:flex;flex-wrap:wrap;gap:.45rem;margin:1rem 0 0}
+.sp-chip2{background:#fff;border:1px solid #cfe3f1;color:#25405a;font-size:.78rem;font-weight:600;padding:.3rem .75rem;border-radius:999px}
+.sp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:.9rem}
+.sp-box{background:#fff;border:1px solid var(--line);border-radius:14px;padding:1.1rem}
+.sp-box .ic{width:1.5rem;height:1.5rem;color:var(--primary);margin-bottom:.5rem}
+.sp-box h3{font-size:1rem;margin:0 0 .3rem}.sp-box p{margin:0;color:var(--muted);font-size:.88rem;line-height:1.55}
+.sp-steps{list-style:none;padding:0;margin:0;display:grid;gap:.8rem;counter-reset:s}
+.sp-steps li{counter-increment:s;display:flex;gap:.9rem;background:#fff;border:1px solid var(--line);border-radius:14px;padding:.95rem 1.1rem}
+.sp-steps li::before{content:counter(s);flex:none;width:34px;height:34px;border-radius:50%;background:var(--ink);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center}
+.sp-steps b{display:block;margin-bottom:.15rem}.sp-steps span{color:var(--muted);font-size:.9rem}
+.sp-rel{display:flex;flex-wrap:wrap;gap:.6rem}
+.sp-rel a{background:var(--band);color:var(--primary-dark);font-weight:700;font-size:.88rem;padding:.5rem .95rem;border-radius:999px;text-decoration:none}
+.sp-rel a:hover{background:var(--primary);color:#fff}
+.sp-faq details{background:#fff;border:1px solid var(--line);border-radius:12px;margin-bottom:.6rem;padding:0 1.1rem}
+.sp-faq summary{cursor:pointer;font-weight:700;padding:.95rem 0;list-style:none;display:flex;justify-content:space-between;gap:1rem}
+.sp-faq summary::-webkit-details-marker{display:none}.sp-faq summary::after{content:"+";font-size:1.3rem;line-height:1;color:var(--primary)}
+.sp-faq details[open] summary::after{content:"−"}
+.sp-faq p{margin:0 0 1rem;color:#41546a;line-height:1.7;font-size:.92rem}
+.sp-notice{margin-top:2rem;background:#fff8ed;border:1px solid #fed7aa;border-radius:12px;padding:.9rem 1.1rem;font-size:.84rem;color:#7c4a14;line-height:1.6}
+
+/* ── Minimal footer (3-4 links + copyright) ── */
+.sp-footer{background:#fff;color:var(--muted);border-top:1px solid var(--line);padding:1.6rem 0 1.8rem;text-align:center;margin-top:1rem}
+.sp-footer-links{display:flex;justify-content:center;flex-wrap:wrap;gap:.4rem 1.6rem;margin-bottom:.6rem}
+.sp-footer-links a{color:var(--ink);font-weight:600;font-size:.9rem;text-decoration:none}.sp-footer-links a:hover{color:var(--primary)}
+.sp-footer-copy{margin:0;font-size:.82rem;color:var(--muted)}
+
+@media(max-width:640px){
+  .sp-row,.subjects-grid,.materials-grid{grid-template-columns:repeat(2,1fr);gap:.75rem}
+  .chapters-list{grid-template-columns:1fr}
+  .sp-cap b{font-size:.9rem}
+}
+
+/* ── fixes after visual QA ── */
+.page-header,.page-header .container{text-align:left}
+.page-header h1{text-align:left}
+.page-header p{margin-left:0;margin-right:0}
+.class-card{display:grid;grid-template-columns:52px 1fr;column-gap:.9rem;align-items:center}
+.class-card .class-icon{grid-row:1/3}
+.class-card h3{align-self:end}.class-card p{align-self:start}
+.sp-info{max-width:1180px}
+.sp-quick,.sp-faq,.sp-steps,.sp-notice{max-width:900px}
+.material-cover{aspect-ratio:3/4;object-fit:cover;width:100%;height:auto}
+.material-meta{flex-wrap:wrap;gap:.35rem}
+.section-title,.section .container>h2{text-align:left}
+.page-header h1{font-family:'Inter',system-ui,sans-serif;font-weight:800}
