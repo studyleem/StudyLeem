@@ -60,4 +60,6 @@
   <url><loc>https://studyleem.vercel.app/fbise/notes/12/computer-science</loc><changefreq>weekly</changefreq><priority>0.80</priority></url>
   <url><loc>https://studyleem.vercel.app/fbise/notes/12/economics</loc><changefreq>weekly</changefreq><priority>0.80</priority></url>
 
+  <url><loc>https://studyleem.vercel.app/fbise/notes</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://studyleem.vercel.app/fbise/books</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
 </urlset>

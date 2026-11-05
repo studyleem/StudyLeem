@@ -78,14 +78,15 @@
       filtered.forEach(m => {
         const slug = m.subjectSlug || toSlug(m.subject);
         if (!subjMap[slug]) {
-          subjMap[slug] = { name: m.subject, slug, count: 0 };
+          subjMap[slug] = { name: m.subject, slug, count: 0, cover: '' };
         }
         subjMap[slug].count++;
+        if (!subjMap[slug].cover && m.coverImage) subjMap[slug].cover = m.coverImage;
       });
 
       const subjects = Object.values(subjMap).sort((a, b) => a.name.localeCompare(b.name));
 
-      grid.innerHTML = subjects.map(s => spCard(`/fbise/${type}/${cls}/${s.slug}`, cls, s.name, type === 'books' ? 'FBISE Book' : 'FBISE Notes')).join('');
+      grid.innerHTML = subjects.map(s => spCard(`/fbise/${type}/${cls}/${s.slug}`, cls, s.name, type === 'books' ? 'FBISE Book' : 'FBISE Notes', s.cover)).join('');
 
     } catch (err) {
       console.error(err);

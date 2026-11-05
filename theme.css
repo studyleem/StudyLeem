@@ -146,3 +146,16 @@ h1,h2,h3,h4,.hero-title,.section-title{font-family:'Inter',system-ui,sans-serif;
 .material-meta{flex-wrap:wrap;gap:.35rem}
 .section-title,.section .container>h2{text-align:left}
 .page-header h1{font-family:'Inter',system-ui,sans-serif;font-weight:800}
+
+/* ── cover images instead of icons ── */
+.sp-tile{aspect-ratio:3/4}
+.sp-cover{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center;z-index:1;background:#eef5fb}
+.sp-tile.has-cover::after{display:none}
+.sp-tile.has-cover .ic{display:none}
+.sp-badge{z-index:2}
+.sp-empty{color:var(--muted);background:#f6fafd;border:1px dashed #cfe3f1;border-radius:14px;padding:1.1rem 1.2rem;margin:0}
+.chapter-item.has-cover{display:grid;grid-template-columns:88px 1fr;gap:1rem;align-items:start}
+.chapter-thumb{width:88px;aspect-ratio:3/4;border-radius:10px;overflow:hidden;background:#eef5fb;border:1px solid var(--line);box-shadow:var(--sh-sm)}
+.chapter-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.chapter-body{display:flex;flex-direction:column;gap:.55rem;align-items:flex-start;min-width:0}
+.chapter-item:not(.has-cover) .chapter-body{width:100%}

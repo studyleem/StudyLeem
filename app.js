@@ -126,18 +126,19 @@ function loadPopularSubjects(materials) {
     materials.filter(m => m.type === type).forEach(m => {
       const slug = m.subjectSlug || toSlug(m.subject || '');
       const key = `${m.class}-${slug}`;
-      if (!map[key]) map[key] = { class: String(m.class), subject: m.subject, slug, count: 0 };
+      if (!map[key]) map[key] = { class: String(m.class), subject: m.subject, slug, count: 0, cover: '' };
       map[key].count++;
+      if (!map[key].cover && m.coverImage) map[key].cover = m.coverImage;   // newest upload with a cover
     });
     const byClass = {};
     Object.values(map).forEach(s => (byClass[s.class] = byClass[s.class] || []).push(s));
     Object.values(byClass).forEach(a => a.sort((x, y) => y.count - x.count));
-    const order = ['12', '11', '10', '9'], picked = [];
+    const order = ['9', '10', '11', '12'], picked = [];
     for (let round = 0; picked.length < 6 && round < 6; round++) {
       order.forEach(c => { if (picked.length < 6 && byClass[c] && byClass[c][round]) picked.push(byClass[c][round]); });
     }
     box.innerHTML = picked.length
-      ? picked.map(s => spCard(`/fbise/${type}/${s.class}/${s.slug}`, s.class, s.subject, type === 'books' ? 'FBISE Book' : 'FBISE Notes')).join('')
+      ? picked.map(s => spCard(`/fbise/${type}/${s.class}/${s.slug}`, s.class, s.subject, type === 'books' ? 'FBISE Book' : 'FBISE Notes', s.cover)).join('')
       : `<p class="loading">No ${type} yet.</p>`;
   };
   fill('notesRow', 'notes');

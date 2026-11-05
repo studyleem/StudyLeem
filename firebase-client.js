@@ -31,7 +31,7 @@ function toSlug(s) {
 function chapterSlugOf(m) {
   if (m.type !== 'notes') return null;
   if (m.chapterNumber == null || m.chapterNumber === '') return toSlug(m.chapterTitle) || null;
-  if (m.contentType === 'exercise') return `exercise-${m.chapterNumber}${m.exerciseNumber ? '-' + m.exerciseNumber : ''}`;
+  if (m.contentType === 'exercise') return m.review ? `review-exercise-${m.chapterNumber}` : `exercise-${m.chapterNumber}${m.exerciseNumber ? '-' + m.exerciseNumber : ''}`;
   return `chapter-${m.chapterNumber}`;
 }
 const ms = t => (t && typeof t.toMillis === 'function') ? t.toMillis() : (typeof t === 'number' ? t : 0);
@@ -70,6 +70,7 @@ function clean(b, base = {}) {
     if (b[k] !== undefined) m[k] = str(String(b[k] ?? ''), max);
   if (b.chapterNumber !== undefined) m.chapterNumber = num(b.chapterNumber, v => parseInt(v, 10));
   if (b.exerciseNumber !== undefined) m.exerciseNumber = num(b.exerciseNumber, parseFloat);
+  if (b.review !== undefined) m.review = !!b.review;
   return m;
 }
 function validate(m) {
@@ -84,12 +85,14 @@ function validate(m) {
 }
 function finalize(m) {
   if (m.type === 'notes' && !m.contentType) m.contentType = 'chapter';
-  if (m.type === 'books') { m.contentType = null; m.chapterNumber = null; m.exerciseNumber = null; m.chapterTitle = null; }
+  if (m.type === 'books') { m.contentType = null; m.chapterNumber = null; m.exerciseNumber = null; m.chapterTitle = null; m.review = false; }
+  if (m.type === 'notes' && m.contentType !== 'exercise') m.review = false;
+  if (m.review) m.exerciseNumber = null;          // a review exercise has no exercise number
   validate(m);
   return {
     type: m.type, contentType: m.contentType ?? null, title: m.title, class: String(m.class),
     subject: m.subject, subjectSlug: toSlug(m.subject),
-    chapterNumber: m.chapterNumber ?? null, exerciseNumber: m.exerciseNumber ?? null,
+    chapterNumber: m.chapterNumber ?? null, exerciseNumber: m.exerciseNumber ?? null, review: !!m.review,
     chapterTitle: m.chapterTitle ?? null, chapterSlug: chapterSlugOf(m),
     coverImage: m.coverImage || null, pdfLink: m.pdfLink || null, description: m.description || null
   };

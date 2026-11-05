@@ -60,9 +60,10 @@ async function initPage(classNum) {
         const subjectMap = {};
         materials.forEach(m => {
             if (!subjectMap[m.subject]) {
-                subjectMap[m.subject] = { books: 0, notes: 0, total: 0 };
+                subjectMap[m.subject] = { books: 0, notes: 0, total: 0, cover: '' };
             }
             subjectMap[m.subject].total++;
+            if (!subjectMap[m.subject].cover && m.coverImage) subjectMap[m.subject].cover = m.coverImage;
             if (m.type === 'books') subjectMap[m.subject].books++;
             if (m.type === 'notes') subjectMap[m.subject].notes++;
         });
@@ -71,7 +72,7 @@ async function initPage(classNum) {
 
         container.innerHTML = subjects.map(subject => {
             const counts = subjectMap[subject];
-            return spCard(`/subject?class=${classNum}&subject=${encodeURIComponent(subject)}`, classNum, subject, counts.books && counts.notes ? 'Notes & Books' : counts.books ? 'Books' : 'Notes');
+            return spCard(`/subject?class=${classNum}&subject=${encodeURIComponent(subject)}`, classNum, subject, counts.books && counts.notes ? 'Notes & Books' : counts.books ? 'Books' : 'Notes', counts.cover);
         }).join('');
 
     } catch (error) {

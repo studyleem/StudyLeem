@@ -84,7 +84,7 @@
       const nA = Number(a.chapterNumber) || 0;
       const nB = Number(b.chapterNumber) || 0;
       if (nA !== nB) return nA - nB;
-      return (Number(a.exerciseNumber) || 0) - (Number(b.exerciseNumber) || 0);
+      return (a.review ? 9999 : Number(a.exerciseNumber) || 0) - (b.review ? 9999 : Number(b.exerciseNumber) || 0);   // review exercise comes last in its chapter
     });
 
     // ── BOOKS: show as single clickable card (whole PDF), not chapter list ──
@@ -92,13 +92,16 @@
       grid.innerHTML = display.map(m => {
         const href = `/fbise/books/${cls}/${subjectSlug}/book-${m.id}`;
         return `
-          <a href="${href}" class="chapter-item book-item" aria-label="${escHtml(m.title)}">
+          <a href="${href}" class="chapter-item book-item${m.coverImage ? ' has-cover' : ''}" aria-label="${escHtml(m.title)}">
+            ${m.coverImage ? `<div class="chapter-thumb"><img src="${escHtml(m.coverImage)}" alt="" loading="lazy" onerror="this.parentNode.parentNode.classList.remove('has-cover');this.parentNode.remove()"></div>` : ''}
+            <div class="chapter-body">
             <div class="chapter-num">${ic('book-open')} Full Textbook</div>
             <div class="chapter-info">
               <h3 class="chapter-title">${escHtml(m.title)}</h3>
               ${m.description ? `<p class="chapter-desc">${escHtml(m.description.substring(0,120))}${m.description.length>120?'…':''}</p>` : ''}
             </div>
             <span class="chapter-cta">Read Book ${ic('arrow-right')}</span>
+            </div>
           </a>
         `;
       }).join('');
@@ -108,23 +111,26 @@
     // ── NOTES: chapter-by-chapter list ──
     grid.innerHTML = display.map(m => {
       const slug  = m.chapterSlug || (m.contentType === 'exercise'
-        ? `exercise-${m.chapterNumber}${m.exerciseNumber ? '-' + m.exerciseNumber : ''}`
+        ? (m.review ? `review-exercise-${m.chapterNumber}` : `exercise-${m.chapterNumber}${m.exerciseNumber ? '-' + m.exerciseNumber : ''}`)
         : `chapter-${m.chapterNumber}`);
       const href  = `/fbise/${type}/${cls}/${subjectSlug}/${slug}`;
       const isEx  = m.contentType === 'exercise';
       const label = isEx
-        ? `Exercise ${m.chapterNumber}.${m.exerciseNumber || ''}`
+        ? (m.review ? `Review Exercise ${m.chapterNumber}` : `Exercise ${m.chapterNumber}.${m.exerciseNumber || ''}`)
         : `Chapter ${m.chapterNumber}`;
       const icon  = isEx ? ic('calculator') : ic('book');
 
       return `
-        <a href="${href}" class="chapter-item" aria-label="${escHtml(label)}: ${escHtml(m.title)}">
+        <a href="${href}" class="chapter-item${m.coverImage ? ' has-cover' : ''}" aria-label="${escHtml(label)}: ${escHtml(m.title)}">
+          ${m.coverImage ? `<div class="chapter-thumb"><img src="${escHtml(m.coverImage)}" alt="" loading="lazy" onerror="this.parentNode.parentNode.classList.remove('has-cover');this.parentNode.remove()"></div>` : ''}
+          <div class="chapter-body">
           <div class="chapter-num">${icon} ${escHtml(label)}</div>
           <div class="chapter-info">
             <h3 class="chapter-title">${escHtml(m.title)}</h3>
             ${m.description ? `<p class="chapter-desc">${escHtml(m.description.substring(0,100))}${m.description.length>100?'…':''}</p>` : ''}
           </div>
           <span class="chapter-cta">${isEx ? 'Open Exercise' : 'Notes + Exercise'} ${ic('arrow-right')}</span>
+          </div>
         </a>
       `;
     }).join('');

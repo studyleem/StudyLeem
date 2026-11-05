@@ -33,8 +33,16 @@
       "destination": "/fbise.html"
     },
     {
+      "source": "/fbise/notes",
+      "destination": "/fbise-all.html"
+    },
+    {
       "source": "/fbise/notes/:class",
       "destination": "/fbise-subject.html"
+    },
+    {
+      "source": "/fbise/books",
+      "destination": "/fbise-all.html"
     },
     {
       "source": "/fbise/books/:class",

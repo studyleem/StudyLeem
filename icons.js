@@ -14,7 +14,8 @@ window.spTile=function(subject){
   else if(/islam|pak|histor|geograph|civic|econom|educat|general/.test(s)){i='home';g=['#7c3aed','#5b21b6'];}
   return {icon:i,g1:g[0],g2:g[1]};
 };
-window.spCard=function(href,cls,subject,label){
+window.spCard=function(href,cls,subject,label,cover){
   var t=window.spTile(subject),e=function(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');};
-  return '<a href="'+href+'" class="sp-card"><div class="sp-tile" style="--g1:'+t.g1+';--g2:'+t.g2+'">'+window.ic(t.icon)+'<span class="sp-badge">Class '+e(cls)+'</span></div><div class="sp-cap"><small>'+e(label||'FBISE')+'</small><b>'+e(subject)+'</b></div></a>';
+  var img=cover?'<img class="sp-cover" src="'+e(cover)+'" alt="'+e(subject)+' cover" loading="lazy" onerror="this.parentNode.classList.remove(\'has-cover\');this.remove()">':'';
+  return '<a href="'+href+'" class="sp-card"><div class="sp-tile'+(cover?' has-cover':'')+'" style="--g1:'+t.g1+';--g2:'+t.g2+'">'+img+window.ic(t.icon)+'<span class="sp-badge">Class '+e(cls)+'</span></div><div class="sp-cap"><small>'+e(label||'FBISE')+'</small><b>'+e(subject)+'</b></div></a>';
 };

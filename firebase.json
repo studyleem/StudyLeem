@@ -6,6 +6,8 @@
     "rewrites": [
       { "source": "/", "destination": "/home.html" },
       { "source": "/admin-secure-panel-sl786", "destination": "/admin.html" },
+      { "source": "/fbise/notes", "destination": "/fbise-all.html" },
+      { "source": "/fbise/books", "destination": "/fbise-all.html" },
       { "source": "/fbise/*/*", "destination": "/fbise-subject.html" },
       { "source": "/fbise/*/*/*", "destination": "/fbise-chapters.html" },
       { "source": "/fbise/*/*/*/*", "destination": "/fbise-viewer.html" }

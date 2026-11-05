@@ -146,7 +146,7 @@
       const href   = `/fbise/${parsePath().type}/${parsePath().cls}/${parsePath().subjectSlug}/${slug}`;
       const isEx   = ch.contentType === 'exercise';
       const label  = isEx
-        ? `Ex ${ch.chapterNumber}.${ch.exerciseNumber || ''}`
+        ? (ch.review ? `Review ${ch.chapterNumber}` : `Ex ${ch.chapterNumber}.${ch.exerciseNumber || ''}`)
         : `Ch ${ch.chapterNumber}`;
       const active = i === _currentIdx ? 'active' : '';
       return `<a href="${href}" class="chapter-tab ${active}" data-idx="${i}"
@@ -189,7 +189,7 @@
 
   function makeSlug(ch) {
     if (ch.contentType === 'exercise') {
-      return `exercise-${ch.chapterNumber}${ch.exerciseNumber ? '-' + ch.exerciseNumber : ''}`;
+      return ch.review ? `review-exercise-${ch.chapterNumber}` : `exercise-${ch.chapterNumber}${ch.exerciseNumber ? '-' + ch.exerciseNumber : ''}`;
     }
     return `chapter-${ch.chapterNumber}`;
   }
@@ -356,7 +356,7 @@
         const na = Number(a.chapterNumber) || 0;
         const nb = Number(b.chapterNumber) || 0;
         if (na !== nb) return na - nb;
-        return (Number(a.exerciseNumber) || 0) - (Number(b.exerciseNumber) || 0);
+        return (a.review ? 9999 : Number(a.exerciseNumber) || 0) - (b.review ? 9999 : Number(b.exerciseNumber) || 0);
       });
       buildChapterNav(all, currentSlug);
     } catch (e) {

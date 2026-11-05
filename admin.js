@@ -99,10 +99,10 @@ function setupForms() {
   // Content type radios (chapter / exercise)
   document.querySelectorAll('input[name="contentType"]').forEach(r => {
     r.onchange = e => {
-      const isEx = e.target.value === 'exercise';
+      const isEx = e.target.value === 'exercise', isRev = e.target.value === 'review';
       document.getElementById('exerciseRow').style.display       = isEx ? 'grid' : 'none';
-      document.getElementById('chapterLabel').textContent        = isEx ? 'Chapter Number * (e.g. 2 for Ex 2.x)' : 'Chapter Number *';
-      document.getElementById('chapterTitleLabel').textContent   = isEx ? 'Exercise Title *' : 'Chapter Title *';
+      document.getElementById('chapterLabel').textContent        = isRev ? 'Chapter Number * (the chapter this review belongs to)' : isEx ? 'Chapter Number * (e.g. 2 for Ex 2.x)' : 'Chapter Number *';
+      document.getElementById('chapterTitleLabel').textContent   = (isEx || isRev) ? 'Exercise Title *' : 'Chapter Title *';
       document.getElementById('chapterTitleGroup').style.display = 'block';
       updateExercisePreview();
     };
@@ -135,9 +135,9 @@ function setupForms() {
     genUrl.style.display = 'none';
 
     const matType     = document.querySelector('input[name="materialType"]:checked').value;
-    const contentType = matType === 'notes'
-      ? document.querySelector('input[name="contentType"]:checked').value
-      : null;
+    const radioType   = matType === 'notes' ? document.querySelector('input[name="contentType"]:checked').value : null;
+    const isReview    = radioType === 'review';
+    const contentType = radioType === null ? null : (isReview ? 'exercise' : radioType);   // review = a special kind of exercise
 
     const data = {
       type:        matType,
@@ -153,7 +153,8 @@ function setupForms() {
     if (matType === 'notes') {
       data.chapterNumber = parseInt(document.getElementById('chapterNumber').value) || null;
       data.chapterTitle  = document.getElementById('chapterTitle').value.trim();
-      if (contentType === 'exercise') {
+      data.review = isReview;
+      if (contentType === 'exercise' && !isReview) {
         data.exerciseNumber = parseFloat(document.getElementById('exerciseNumber').value) || null;
       }
     }
@@ -169,7 +170,7 @@ function setupForms() {
     if (matType === 'notes') {
       if (!data.chapterNumber) errors.push('Chapter Number');
       if (!data.chapterTitle)  errors.push('Chapter/Exercise Title');
-      if (contentType === 'exercise' && !data.exerciseNumber) errors.push('Exercise Number');
+      if (contentType === 'exercise' && !isReview && !data.exerciseNumber) errors.push('Exercise Number');
     }
 
     if (errors.length) {
@@ -188,7 +189,8 @@ function setupForms() {
       const subSlug = toSlug(data.subject);
       let url = '';
       if (matType === 'notes') {
-        const chSlug = contentType === 'exercise'
+        const chSlug = isReview ? `review-exercise-${data.chapterNumber}`
+          : contentType === 'exercise'
           ? `exercise-${data.chapterNumber}-${data.exerciseNumber}`
           : `chapter-${data.chapterNumber}`;
         url = `/fbise/notes/${data.class}/${subSlug}/${chSlug}`;
@@ -239,9 +241,12 @@ function setupForms() {
       updates.exerciseNumber = parseFloat(document.getElementById('editExerciseNumber').value) || null;
       updates.chapterTitle   = document.getElementById('editChapterTitle').value.trim();
       // Recalculate slugs
-      const isEx = !!updates.exerciseNumber;
-      updates.chapterSlug = isEx
-        ? `exercise-${updates.chapterNumber}-${updates.exerciseNumber}`
+      const isRev = document.getElementById('editReview').checked;
+      const isEx  = isRev || !!updates.exerciseNumber;
+      if (isRev) updates.exerciseNumber = null;
+      updates.review = isRev;
+      updates.chapterSlug = isRev ? `review-exercise-${updates.chapterNumber}`
+        : isEx ? `exercise-${updates.chapterNumber}-${updates.exerciseNumber}`
         : `chapter-${updates.chapterNumber}`;
       updates.contentType = isEx ? 'exercise' : 'chapter';
     }
@@ -327,7 +332,9 @@ function updateExercisePreview() {
   const ex  = document.getElementById('exerciseNumber').value;
   const ct  = document.querySelector('input[name="contentType"]:checked');
   if (!el || !ct) return;
-  if (ct.value === 'exercise' && ch) {
+  if (ct.value === 'review' && ch) {
+    el.textContent = `Preview: Review Exercise ${ch}`;
+  } else if (ct.value === 'exercise' && ch) {
     el.textContent = `Preview: Exercise ${ch}.${ex || '?'}`;
   } else if (ch) {
     el.textContent = `Preview: Chapter ${ch}`;
@@ -366,7 +373,8 @@ function renderTable(materials) {
     } else if (m.type === 'books') {
       url = `/fbise/books/${m.class}/${subSlug}`;
     }
-    const chEx = m.contentType === 'exercise'
+    const chEx = m.review ? `Review Ex ${m.chapterNumber}`
+      : m.contentType === 'exercise'
       ? `Ex ${m.chapterNumber}.${m.exerciseNumber || '?'}`
       : (m.chapterNumber ? `Ch ${m.chapterNumber}` : '—');
     return `<tr>
@@ -418,6 +426,7 @@ window.editMaterial = function(id) {
     chRow.style.display = 'block';
     document.getElementById('editChapterNumber').value  = m.chapterNumber || '';
     document.getElementById('editExerciseNumber').value = m.exerciseNumber || '';
+    document.getElementById('editReview').checked       = !!m.review;
     document.getElementById('editChapterTitle').value   = m.chapterTitle || '';
   } else {
     chRow.style.display = 'none';
