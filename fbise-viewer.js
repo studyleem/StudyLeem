@@ -109,7 +109,13 @@
     const { type, cls, subjectSlug, chapterSlug } = parsePath();
     const subjectName = data.subject || subjectSlug.replace(/-/g, ' ');
     const isBook = type === 'books';
-    const title = `${data.title} – FBISE Class ${cls} ${subjectName} | StudyLeem`;
+    const subjTitle = String(subjectName).replace(/\b\w/g, c => c.toUpperCase());
+    const isEx = data.contentType === 'exercise';
+    const part = isBook ? 'Book'
+      : isEx ? (data.review ? `Review Exercise ${data.chapterNumber}` : `Exercise ${data.chapterNumber}${data.exerciseNumber ? '.' + data.exerciseNumber : ''}`)
+      : data.chapterNumber ? `Chapter ${data.chapterNumber}` : data.title;
+    const h1Text = `Class ${cls} ${subjTitle} ${part} ${isBook ? 'PDF' : 'Notes PDF'}`;
+    const title = `${h1Text} - FBISE Federal Board | Studyleem`;
     const desc  = `View and download: ${data.title}. Free FBISE ${subjectName} ${isBook ? 'textbook' : 'notes'} for Class ${cls} Federal Board Pakistan.`;
     const kw    = `FBISE ${subjectName} ${isBook ? 'book' : 'notes'} class ${cls}, ${data.title}, Federal Board Pakistan PDF`;
 
@@ -118,6 +124,7 @@
     document.getElementById('pageKeywords').content     = kw;
     document.getElementById('pageCanonical').href       = `https://studyleem.vercel.app/fbise/${type}/${cls}/${subjectSlug}/${chapterSlug}`;
     document.getElementById('docTitle').textContent     = data.title;
+    const sh = document.getElementById('seoH1'); if (sh) sh.textContent = h1Text;
 
     // Breadcrumb
     const clsLabel  = `Class ${cls}`;

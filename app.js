@@ -80,6 +80,7 @@ async function loadData() {
   try {
     const materials = await DB.getAll();
     loadLatestMaterials(materials);
+    loadChapterLinks(materials);
     loadPopularSubjects(materials);
     updateStats(materials);
   } catch (err) {
@@ -164,4 +165,26 @@ function escHtml(t) {
   const d = document.createElement('div');
   d.textContent = t;
   return d.innerHTML;
+}
+
+
+/* SEO: crawlable links to every chapter page (reads the same materials already loaded) */
+function loadChapterLinks(materials) {
+  const box = document.getElementById('chapterLinks');
+  if (!box) return;
+  const seen = {}, byClass = { '9': [], '10': [], '11': [], '12': [] };
+  materials.forEach(m => {
+    if (m.type === 'books' || (m.contentType && m.contentType !== 'chapter') || !m.chapterNumber) return;
+    const subj = m.subjectSlug || toSlug(m.subject || '');
+    const slug = m.chapterSlug || `chapter-${m.chapterNumber}`;
+    const href = `/fbise/notes/${m.class}/${subj}/${slug}`;
+    if (seen[href] || !byClass[String(m.class)]) return;
+    seen[href] = 1;
+    byClass[String(m.class)].push({ href, subject: m.subject || subj, n: Number(m.chapterNumber) || 0 });
+  });
+  box.innerHTML = Object.keys(byClass).filter(c => byClass[c].length).map(c => {
+    const items = byClass[c].sort((a, b) => a.subject.localeCompare(b.subject) || a.n - b.n);
+    return `<div class="sl-ln-group"><h3>Class ${c} Chapter-wise Notes</h3><div class="sl-ln-links">` +
+      items.map(i => `<a href="${i.href}">Class ${c} ${escHtml(i.subject)} Chapter ${i.n} Notes</a>`).join('') + '</div></div>';
+  }).join('');
 }

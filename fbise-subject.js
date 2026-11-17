@@ -39,7 +39,7 @@
   function setMeta(type, cls) {
     const typeLabel = type === 'books' ? 'Books' : 'Notes';
     const clsLabel  = classLabels[cls] || `Class ${cls}`;
-    const title = `FBISE ${typeLabel} ${clsLabel} – Free PDF | StudyLeem`;
+    const title = `${clsLabel} ${typeLabel} PDF - All Subjects - FBISE Federal Board | Studyleem`;
     const desc  = `Free FBISE ${typeLabel.toLowerCase()} for ${clsLabel} Federal Board Pakistan. Chapter-wise PDF study materials for all subjects.`;
     const keys  = `FBISE ${typeLabel.toLowerCase()} class ${cls}, FBISE class ${cls} ${typeLabel.toLowerCase()}, Federal Board ${cls} ${typeLabel.toLowerCase()} PDF, free FBISE class ${cls} study material Pakistan`;
 

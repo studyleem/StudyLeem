@@ -40,7 +40,7 @@
     const typeLabel = type === 'books' ? 'Books' : 'Notes';
     const clsLabel  = classLabels[cls] || `Class ${cls}`;
     const subLabel  = subjectName || subjectSlug.replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
-    const title = `FBISE ${subLabel} ${typeLabel} ${clsLabel} – Chapter Wise PDF | StudyLeem`;
+    const title = `${clsLabel} ${subLabel} ${type === 'books' ? 'Book' : 'Notes'} PDF - All Chapters - FBISE Federal Board | Studyleem`;
     const desc  = `Free FBISE ${subLabel} ${typeLabel.toLowerCase()} for ${clsLabel} Federal Board Pakistan. Download chapter-wise PDF notes.`;
 
     document.getElementById('pageTitle').textContent    = title;
