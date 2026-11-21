@@ -79,6 +79,10 @@
     {
       "source": "/leemai",
       "destination": "/leemai.html"
+    },
+    {
+      "source": "/sitemap-materials.xml",
+      "destination": "/api/sitemap-materials"
     }
   ],
   "headers": [
@@ -111,6 +115,37 @@
           "value": "noindex, nofollow"
         }
       ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        }
+      ]
+    },
+    {
+      "source": "/pdf-preview",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)\\.(png|svg|webp|ico)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=604800"
+        }
+      ]
     }
   ],
   "functions": {
@@ -119,6 +154,18 @@
     },
     "api/pdf-ai.js": {
       "maxDuration": 30
+    },
+    "api/ask.js": {
+      "maxDuration": 30
+    },
+    "api/quiz.js": {
+      "maxDuration": 60
+    },
+    "api/check.js": {
+      "maxDuration": 60
+    },
+    "api/sitemap-materials.js": {
+      "maxDuration": 20
     }
   }
 }

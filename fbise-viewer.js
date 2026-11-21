@@ -115,14 +115,22 @@
       : isEx ? (data.review ? `Review Exercise ${data.chapterNumber}` : `Exercise ${data.chapterNumber}${data.exerciseNumber ? '.' + data.exerciseNumber : ''}`)
       : data.chapterNumber ? `Chapter ${data.chapterNumber}` : data.title;
     const h1Text = `Class ${cls} ${subjTitle} ${part} ${isBook ? 'PDF' : 'Notes PDF'}`;
-    const title = `${h1Text} - FBISE Federal Board | Studyleem`;
-    const desc  = `View and download: ${data.title}. Free FBISE ${subjectName} ${isBook ? 'textbook' : 'notes'} for Class ${cls} Federal Board Pakistan.`;
+    const title = `${h1Text} – FBISE | StudyLeem`;
+    const desc  = `${data.title} – free FBISE ${subjectName} ${isBook ? 'textbook' : 'notes'} for Class ${cls} (Federal Board Pakistan). Read online, then practise with a LeemAI AI quiz.`;
     const kw    = `FBISE ${subjectName} ${isBook ? 'book' : 'notes'} class ${cls}, ${data.title}, Federal Board Pakistan PDF`;
 
     document.getElementById('pageTitle').textContent    = title;
     document.getElementById('pageDesc').content         = desc;
     document.getElementById('pageKeywords').content     = kw;
     document.getElementById('pageCanonical').href       = `https://studyleem.vercel.app/fbise/${type}/${cls}/${subjectSlug}/${chapterSlug}`;
+    if (window.SEO) {
+      const subT = String(subjectName).replace(/\b\w/g, c => c.toUpperCase());
+      SEO.apply({
+        title, description: desc, keywords: kw, canonical: `/fbise/${type}/${cls}/${subjectSlug}/${chapterSlug}`,
+        breadcrumbs: [{ name: 'Home', url: '/' }, { name: 'FBISE', url: '/fbise' }, { name: `Class ${cls}`, url: `/fbise/${type}/${cls}` }, { name: subT, url: `/fbise/${type}/${cls}/${subjectSlug}` }, { name: data.title, url: `/fbise/${type}/${cls}/${subjectSlug}/${chapterSlug}` }],
+        jsonld: [{ '@type': 'LearningResource', name: h1Text, description: desc, url: `https://studyleem.vercel.app/fbise/${type}/${cls}/${subjectSlug}/${chapterSlug}`, learningResourceType: isBook ? 'Textbook' : (isEx ? 'Exercise' : 'Study notes'), educationalLevel: `Class ${cls}`, about: subT, inLanguage: 'en', isAccessibleForFree: true, provider: { '@type': 'Organization', name: 'StudyLeem', url: 'https://studyleem.vercel.app' } }]
+      });
+    }
     document.getElementById('docTitle').textContent     = data.title;
     const sh = document.getElementById('seoH1'); if (sh) sh.textContent = h1Text;
 

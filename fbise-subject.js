@@ -39,14 +39,19 @@
   function setMeta(type, cls) {
     const typeLabel = type === 'books' ? 'Books' : 'Notes';
     const clsLabel  = classLabels[cls] || `Class ${cls}`;
-    const title = `${clsLabel} ${typeLabel} PDF - All Subjects - FBISE Federal Board | Studyleem`;
-    const desc  = `Free FBISE ${typeLabel.toLowerCase()} for ${clsLabel} Federal Board Pakistan. Chapter-wise PDF study materials for all subjects.`;
+    const title = `Class ${cls} FBISE ${typeLabel} – All Subjects, Free PDF | StudyLeem`;
+    const desc  = `Free FBISE ${typeLabel.toLowerCase()} for ${clsLabel} (Federal Board Pakistan): chapter-wise PDFs for every subject, plus LeemAI, the AI tutor with quizzes.`;
     const keys  = `FBISE ${typeLabel.toLowerCase()} class ${cls}, FBISE class ${cls} ${typeLabel.toLowerCase()}, Federal Board ${cls} ${typeLabel.toLowerCase()} PDF, free FBISE class ${cls} study material Pakistan`;
 
     document.getElementById('pageTitle').textContent      = title;
     document.getElementById('pageDesc').content           = desc;
     document.getElementById('pageKeywords').content       = keys;
     document.getElementById('pageCanonical').href         = `https://studyleem.vercel.app/fbise/${type}/${cls}`;
+    if (window.SEO) SEO.apply({
+      title, description: desc, keywords: keys, canonical: `/fbise/${type}/${cls}`,
+      breadcrumbs: [{ name: 'Home', url: '/' }, { name: 'FBISE', url: '/fbise' }, { name: `FBISE ${typeLabel}`, url: `/fbise/${type}` }, { name: clsLabel, url: `/fbise/${type}/${cls}` }],
+      jsonld: [{ '@type': 'CollectionPage', name: `FBISE ${typeLabel} – ${clsLabel}`, description: desc, url: `https://studyleem.vercel.app/fbise/${type}/${cls}`, educationalLevel: clsLabel, inLanguage: 'en', isAccessibleForFree: true }]
+    });
     document.getElementById('pageH1').textContent         = `FBISE ${typeLabel} – ${clsLabel}`;
     document.getElementById('pageSubtitle').textContent   = `Select a subject to browse ${typeLabel === 'Books' ? 'textbooks' : 'chapter-wise notes'}`;
     document.getElementById('breadClass').textContent     = clsLabel;

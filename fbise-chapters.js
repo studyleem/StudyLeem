@@ -40,13 +40,18 @@
     const typeLabel = type === 'books' ? 'Books' : 'Notes';
     const clsLabel  = classLabels[cls] || `Class ${cls}`;
     const subLabel  = subjectName || subjectSlug.replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
-    const title = `${clsLabel} ${subLabel} ${type === 'books' ? 'Book' : 'Notes'} PDF - All Chapters - FBISE Federal Board | Studyleem`;
-    const desc  = `Free FBISE ${subLabel} ${typeLabel.toLowerCase()} for ${clsLabel} Federal Board Pakistan. Download chapter-wise PDF notes.`;
+    const title = `${subLabel} ${type === 'books' ? 'Book' : 'Notes'} Class ${cls} FBISE – Free PDF | StudyLeem`;
+    const desc  = `Free FBISE ${subLabel} ${typeLabel.toLowerCase()} for ${clsLabel} (Federal Board Pakistan): chapter-wise PDF, plus a free LeemAI ${subLabel} quiz and AI tutor.`;
 
     document.getElementById('pageTitle').textContent    = title;
     document.getElementById('pageDesc').content         = desc;
     document.getElementById('pageKeywords').content     = `FBISE ${subLabel} notes class ${cls}, ${subLabel} chapter wise notes FBISE, Federal Board ${cls} ${subLabel} PDF, free ${subLabel} notes Pakistan`;
     document.getElementById('pageCanonical').href       = `https://studyleem.vercel.app/fbise/${type}/${cls}/${subjectSlug}`;
+    if (window.SEO) SEO.apply({
+      title, description: desc, keywords: document.getElementById('pageKeywords').content, canonical: `/fbise/${type}/${cls}/${subjectSlug}`,
+      breadcrumbs: [{ name: 'Home', url: '/' }, { name: 'FBISE', url: '/fbise' }, { name: `Class ${cls}`, url: `/fbise/${type}/${cls}` }, { name: subLabel, url: `/fbise/${type}/${cls}/${subjectSlug}` }],
+      jsonld: [{ '@type': 'CollectionPage', name: `${subLabel} ${typeLabel} – ${clsLabel}`, description: desc, url: `https://studyleem.vercel.app/fbise/${type}/${cls}/${subjectSlug}`, about: subLabel, educationalLevel: clsLabel, inLanguage: 'en', isAccessibleForFree: true }]
+    });
     document.getElementById('pageH1').textContent       = `${subLabel} – ${typeLabel} (${clsLabel})`;
     document.getElementById('pageSubtitle').textContent = type === 'books'
       ? `FBISE Federal Board complete textbook in PDF`

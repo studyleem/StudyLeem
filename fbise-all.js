@@ -12,6 +12,12 @@
     document.getElementById('pageDesc').content = `Free FBISE ${T.toLowerCase()} for Class 9, 10, 11 and 12 Federal Board Pakistan. Browse every subject by class.`;
     const kw = document.getElementById('pageKeywords'); if (kw) kw.content = `FBISE ${T.toLowerCase()}, Federal Board ${T.toLowerCase()} PDF, class 9 10 11 12 ${T.toLowerCase()}`;
     document.getElementById('pageCanonical').href = `https://studyleem.vercel.app/fbise/${type}`;
+    if (window.SEO) SEO.apply({
+      title: document.getElementById('pageTitle').textContent, description: document.getElementById('pageDesc').content,
+      keywords: document.getElementById('pageKeywords').content, canonical: `/fbise/${type}`,
+      breadcrumbs: [{ name: 'Home', url: '/' }, { name: 'FBISE', url: '/fbise' }, { name: `FBISE ${T}`, url: `/fbise/${type}` }],
+      jsonld: [{ '@type': 'CollectionPage', name: `FBISE ${T} for Class 9, 10, 11 and 12`, url: `https://studyleem.vercel.app/fbise/${type}`, isPartOf: { '@type': 'WebSite', name: 'StudyLeem', url: 'https://studyleem.vercel.app' }, inLanguage: 'en' }]
+    });
     document.getElementById('pageH1').textContent = `FBISE ${T} \u2013 Class 9 to 12`;
     document.getElementById('pageSubtitle').textContent = `Every subject we have uploaded, class by class. Open "Click More" to see the full list for a class.`;
     document.getElementById('breadClass').textContent = T;
