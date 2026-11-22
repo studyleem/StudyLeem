@@ -3,7 +3,7 @@
 const PROJECT = 'studyleem0786';
 const KEY = 'AIzaSyD3v1qSVW-DIuqLhJFRESjl903VjH55umA'; // public Firebase web key (same as firebase-client.js)
 const SITE = 'https://studyleem.vercel.app';
-const FIELDS = ['type', 'class', 'subject', 'subjectSlug', 'chapterSlug', 'contentType', 'chapterNumber', 'exerciseNumber', 'review', 'createdAt'];
+const FIELDS = ['type', 'typeLabel', 'class', 'subject', 'subjectSlug', 'chapterSlug', 'contentType', 'chapterNumber', 'exerciseNumber', 'review', 'createdAt'];
 
 const toSlug = s => String(s || '').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '').replace(/-+/g, '-').replace(/^-|-$/g, '');
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -31,21 +31,26 @@ module.exports = async (req, res) => {
     const add = (path, lastmod, pri, freq) => { const loc = SITE + path; const o = urls.get(loc); if (!o || (lastmod && lastmod > (o.lastmod || ''))) urls.set(loc, { lastmod: lastmod || (o && o.lastmod) || '', pri, freq }); };
 
     for (const { id, f } of docs) {
-      const type = val(f.type) === 'books' ? 'books' : 'notes';
+      const rawType = String(val(f.type) || 'notes').toLowerCase();
+      const type = /^[a-z0-9][a-z0-9-]{1,40}$/.test(rawType) ? rawType : 'notes';   // notes, books or any other material type
       const cls = String(val(f.class) || '');
       if (!['9', '10', '11', '12'].includes(cls)) continue;
       const subject = val(f.subject), slug = val(f.subjectSlug) || toSlug(subject);
       if (!slug) continue;
       const created = val(f.createdAt); const lastmod = created ? String(created).slice(0, 10) : '';
+      if (type !== 'notes' && type !== 'books') {            // pages of a custom type: /fbise/<type> and /fbise/<type>/<class>
+        add(`/fbise/${type}`, lastmod, '0.7', 'weekly');
+        add(`/fbise/${type}/${cls}`, lastmod, '0.7', 'weekly');
+      }
       add(`/fbise/${type}/${cls}/${slug}`, lastmod, '0.8', 'weekly');
 
       let chSlug = val(f.chapterSlug);
-      if (type === 'books') chSlug = 'book-' + id;
-      else if (!chSlug) {
+      if (type === 'books' && !chSlug) chSlug = 'book-' + id;                 // old single textbooks
+      else if (type === 'notes' && !chSlug) {
         const n = val(f.chapterNumber);
         if (n != null && val(f.contentType) === 'exercise') chSlug = val(f.review) ? `review-exercise-${n}` : `exercise-${n}${val(f.exerciseNumber) ? '-' + val(f.exerciseNumber) : ''}`;
         else if (n != null) chSlug = `chapter-${n}`;
-      }
+      } else if (!chSlug) chSlug = 'item-' + id;
       if (chSlug) add(`/fbise/${type}/${cls}/${slug}/${chSlug}`, lastmod, '0.7', 'monthly');
     }
 
