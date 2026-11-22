@@ -45,7 +45,7 @@ function showDashboard() {
 
 // ── Navigation ────────────────────────────────────
 function setupNavigation() {
-  const titles = { upload:'Upload Material', manage:'Manage Materials', stats:'Statistics', messages:'Contact Messages' };
+  const titles = { upload:'Upload Material', manage:'Manage Materials', stats:'Statistics', messages:'Contact Messages', blog:'Blog Posts' };
   document.querySelectorAll('.admin-nav-link[data-page]').forEach(link => {
     link.onclick = e => {
       e.preventDefault();
@@ -59,6 +59,7 @@ function setupNavigation() {
       if (page === 'manage')   loadMaterials();
       if (page === 'stats')    loadStats();
       if (page === 'messages') loadMessages();
+      if (page === 'blog')     loadBlog();
     };
   });
   document.getElementById('logoutBtn').onclick = async e => {

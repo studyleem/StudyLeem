@@ -81,8 +81,20 @@
       "destination": "/leemai.html"
     },
     {
+      "source": "/blog",
+      "destination": "/blog.html"
+    },
+    {
+      "source": "/blog/:slug",
+      "destination": "/blog-post.html"
+    },
+    {
       "source": "/sitemap-materials.xml",
       "destination": "/api/sitemap-materials"
+    },
+    {
+      "source": "/sitemap-blog.xml",
+      "destination": "/api/sitemap-blog"
     }
   ],
   "headers": [
@@ -104,6 +116,10 @@
         {
           "key": "Referrer-Policy",
           "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "frame-ancestors 'self'"
         }
       ]
     },
@@ -165,6 +181,9 @@
       "maxDuration": 60
     },
     "api/sitemap-materials.js": {
+      "maxDuration": 20
+    },
+    "api/sitemap-blog.js": {
       "maxDuration": 20
     }
   }

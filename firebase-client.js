@@ -9,6 +9,10 @@ import {
   getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 
+// Domain lock (keep in sync with domain-guard.js): no data is fetched on any other domain.
+const HOST_OK = ['studyleem.vercel.app', 'localhost', '127.0.0.1'];
+if (!HOST_OK.includes(location.hostname)) throw new Error('StudyLeem: this domain is not allowed');
+
 const firebaseConfig = {
   apiKey: "AIzaSyD3v1qSVW-DIuqLhJFRESjl903VjH55umA",
   authDomain: "studyleem0786.firebaseapp.com",
@@ -234,5 +238,62 @@ const Messages = {
   async remove(id)   { try { await deleteDoc(doc(db, 'contact_messages', id)); } catch (e) { throw friendly(e); } }
 };
 
-Object.assign(window, { DB, Auth, Messages, toSlug });
+
+/* ── Blog (collection: blogPosts, document id = URL slug) ── */
+const BLOG_SLUG = /^[a-z0-9][a-z0-9-]{2,90}$/;
+const fromPost = d => { const x = d.data(); return { ...x, id: d.id, slug: d.id, publishedAt: ms(x.publishedAt), createdAt: ms(x.createdAt), updatedAt: ms(x.updatedAt) }; };
+const Blog = {
+  isValidSlug: s => BLOG_SLUG.test(String(s || '')),
+  // public: published posts, newest first (cached 5 min)
+  async listPublished(max = 100) {
+    return cached('blog_list', async () => {
+      try {
+        const s = await getDocs(query(collection(db, 'blogPosts'), where('status', '==', 'published'), limit(max)));
+        return s.docs.map(fromPost).sort((a, b) => b.publishedAt - a.publishedAt);
+      } catch (e) { throw friendly(e); }
+    });
+  },
+  async getBySlug(slug) {
+    if (!BLOG_SLUG.test(String(slug || ''))) return null;
+    try {
+      const d = await getDoc(doc(db, 'blogPosts', slug));
+      if (!d.exists()) return null;
+      const p = fromPost(d);
+      return (p.status === 'published' || _admin) ? p : null;
+    } catch (e) {
+      if (String(e && e.code).includes('permission-denied')) return null;
+      throw friendly(e);
+    }
+  },
+  // admin: everything including drafts
+  async listAll() {
+    try {
+      const s = await getDocs(query(collection(db, 'blogPosts'), limit(500)));
+      return s.docs.map(fromPost).sort((a, b) => (b.publishedAt || b.createdAt) - (a.publishedAt || a.createdAt));
+    } catch (e) { throw friendly(e); }
+  },
+  async save(slug, d, isNew) {
+    if (!BLOG_SLUG.test(String(slug || ''))) throw new Error('Slug must be 3-90 characters: lowercase letters, numbers and hyphens.');
+    const content = str(d.content, 60000), title = str(d.title, 200);
+    if (!title || content.length < 50) throw new Error('A title and some content are required.');
+    const words = content.split(/\s+/).filter(Boolean).length;
+    const status = d.status === 'published' ? 'published' : 'draft';
+    const data = {
+      title, excerpt: str(d.excerpt, 400), metaDescription: str(d.metaDescription, 200), keywords: str(d.keywords, 400),
+      category: str(d.category, 60) || 'Study Tips', content, wordCount: words,
+      readingMinutes: Math.max(1, Math.round(Number(d.readingMinutes)) || Math.ceil(words / 200)),
+      status, updatedAt: serverTimestamp()
+    };
+    if (status === 'published' && !d.hadPublishedAt) data.publishedAt = serverTimestamp();
+    if (isNew) { data.createdAt = serverTimestamp(); data.source = 'admin'; }
+    try {
+      if (isNew && (await getDoc(doc(db, 'blogPosts', slug))).exists()) throw new Error('A post with this slug already exists.');
+      await setDoc(doc(db, 'blogPosts', slug), data, { merge: true });
+      cacheClear();
+    } catch (e) { throw friendly(e); }
+  },
+  async remove(slug) { try { await deleteDoc(doc(db, 'blogPosts', slug)); cacheClear(); } catch (e) { throw friendly(e); } }
+};
+
+Object.assign(window, { DB, Auth, Messages, Blog, toSlug });
 window.dispatchEvent(new Event('firebase-ready'));

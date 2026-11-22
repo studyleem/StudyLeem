@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="/domain-guard.js"></script>
 <script src="/icons.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,6 +11,7 @@
 <link rel="stylesheet" href="/styles.css">
 <link rel="stylesheet" href="/pro.css">
 <link rel="stylesheet" href="/theme.css">
+<link rel="stylesheet" href="/blog.css">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZNNDTM33RB"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-ZNNDTM33RB');</script>
@@ -55,6 +57,7 @@
       <a href="#" class="admin-nav-link" data-page="manage"><svg class="ic" width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="/icons.svg#book-open"/></svg> Manage</a>
       <a href="#" class="admin-nav-link" data-page="stats"><svg class="ic" width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="/icons.svg#chart"/></svg> Stats</a>
       <a href="#" class="admin-nav-link" data-page="messages"><svg class="ic" width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="/icons.svg#mail"/></svg> Messages</a>
+      <a href="#" class="admin-nav-link" data-page="blog"><svg class="ic" width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="/icons.svg#notes"/></svg> Blog</a>
       <a href="#" id="logoutBtn" class="admin-nav-link logout"><svg class="ic" width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="/icons.svg#log-out"/></svg> Logout</a>
     </nav>
   </aside>
@@ -232,9 +235,57 @@
         </div>
       </div>
 
+      <div id="blogPage" class="admin-page">
+        <div class="manage-filters">
+          <input type="text" id="searchBlog" placeholder="Search posts..." class="search-input">
+          <select id="filterBlogStatus"><option value="">All</option><option value="published">Published</option><option value="draft">Draft</option></select>
+          <button type="button" class="btn btn-primary" id="newBlogBtn">+ New post</button>
+        </div>
+        <p style="font-size:.85rem;color:#64748b;margin:.2rem 0 1rem">A new article is generated automatically every week by your Google Apps Script (source: <b>auto-blog</b>). You can edit, unpublish or delete any post here, or write your own.</p>
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead><tr><th>Title</th><th>Category</th><th>Status</th><th>Source</th><th>Date</th><th>Actions</th></tr></thead>
+            <tbody id="blogTableBody"><tr><td colspan="6" class="loading">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
     </div><!-- /admin-content -->
   </main>
 </div><!-- /dashboardPage -->
+
+<!-- Blog Modal -->
+<div id="blogModal" class="modal">
+  <div class="modal-content" style="max-width:860px">
+    <div class="modal-header"><h2 id="blogModalTitle">New post</h2><button id="closeBlogModal" class="modal-close" type="button">×</button></div>
+    <form id="blogForm">
+      <input type="hidden" id="blogIsNew">
+      <input type="hidden" id="blogHadPub">
+      <div class="form-row">
+        <div class="form-group"><label>Title *</label><input type="text" id="blogTitle" required maxlength="200"></div>
+        <div class="form-group"><label>URL slug * <small>(cannot change after saving)</small></label><input type="text" id="blogSlug" required maxlength="90" placeholder="how-to-study-physics-for-fbise"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Category</label>
+          <select id="blogCategory"><option>Study Tips</option><option>Exam Preparation</option><option>Subject Guides</option><option>Time Management</option><option>Smart Learning with AI</option><option>Student Wellbeing</option><option>Career &amp; Guidance</option></select></div>
+        <div class="form-group"><label>Status</label><select id="blogStatus"><option value="published">Published</option><option value="draft">Draft (hidden)</option></select></div>
+      </div>
+      <div class="form-group"><label>Excerpt <small>(shown on cards, max ~180 chars)</small></label><textarea id="blogExcerpt" rows="2" maxlength="400"></textarea></div>
+      <div class="form-row">
+        <div class="form-group"><label>Meta description <small>(Google snippet, ≤155 chars)</small></label><input type="text" id="blogMeta" maxlength="200"></div>
+        <div class="form-group"><label>Keywords <small>(comma separated)</small></label><input type="text" id="blogKeywords" maxlength="400"></div>
+      </div>
+      <div class="form-group"><label>Content * <small>(Markdown: ## Heading, - list, **bold**, [text](/leemai#quiz))</small></label><textarea id="blogContent" rows="16" style="font-family:monospace;font-size:.88rem"></textarea></div>
+      <div id="blogPreview" class="bp-body" style="display:none;border:1px solid #e2e8f0;border-radius:10px;padding:1rem;max-height:340px;overflow:auto;margin-bottom:1rem"></div>
+      <div id="blogMsg" class="status-message"></div>
+      <div style="display:flex;gap:.8rem;justify-content:flex-end;margin-top:1rem;flex-wrap:wrap">
+        <button type="button" class="btn btn-secondary" id="blogPreviewBtn">Preview</button>
+        <button type="button" class="btn btn-secondary" id="closeBlogModal2">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="blogSaveBtn">Save post</button>
+      </div>
+    </form>
+  </div>
+</div>
 
 <!-- Edit Modal -->
 <div id="editModal" class="modal">
@@ -282,6 +333,8 @@
 </div>
 
 <script type="module" src="/firebase-client.js"></script>
+<script src="/blog-md.js"></script>
 <script src="/admin.js"></script>
+<script src="/admin-blog.js"></script>
 </body>
 </html>

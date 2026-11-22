@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <sitemap><loc>https://studyleem.vercel.app/sitemap-pages.xml</loc><lastmod>2026-11-21</lastmod></sitemap>
-  <sitemap><loc>https://studyleem.vercel.app/sitemap-materials.xml</loc><lastmod>2026-11-21</lastmod></sitemap>
+  <sitemap><loc>https://studyleem.vercel.app/sitemap-pages.xml</loc><lastmod>2026-11-22</lastmod></sitemap>
+  <sitemap><loc>https://studyleem.vercel.app/sitemap-materials.xml</loc><lastmod>2026-11-22</lastmod></sitemap>
+  <sitemap><loc>https://studyleem.vercel.app/sitemap-blog.xml</loc><lastmod>2026-11-22</lastmod></sitemap>
 </sitemapindex>

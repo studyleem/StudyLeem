@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="/domain-guard.js"></script>
 <script src="/icons.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -25,6 +26,10 @@
 <meta name="twitter:description" content="LeemAI is an AI-powered study assistant personalized for FBISE Class 9–12: ask questions, take AI quizzes with score and review, and get your paper checked.">
 <meta name="twitter:image" content="https://studyleem.vercel.app/og-image.png">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebApplication","@id":"https://studyleem.vercel.app/leemai#app","name":"LeemAI","url":"https://studyleem.vercel.app/leemai","applicationCategory":"EducationalApplication","operatingSystem":"Any (web browser)","description":"LeemAI is an AI-powered study assistant personalized for FBISE (Federal Board Pakistan) Classes 9-12: ask questions, generate class and subject quizzes with score and review, and get papers checked from a photo.","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"PKR"},"inLanguage":["en","ur"],"audience":{"@type":"EducationalAudience","educationalRole":"student"},"publisher":{"@id":"https://studyleem.vercel.app/#org"},"featureList":["AI tutor personalized for FBISE Class 9-12","AI quiz generator by class, subject and chapter with score, review and study plan","AI paper checker with question-wise marks from a photo","Answers in English, Urdu and Roman Urdu","Photos are not stored on StudyLeem servers"]},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is LeemAI?","acceptedAnswer":{"@type":"Answer","text":"LeemAI is the AI-powered study assistant of StudyLeem, personalized for the Federal Board (FBISE) syllabus of Classes 9, 10, 11 and 12. It answers questions, creates quizzes and checks handwritten papers."}},{"@type":"Question","name":"Is LeemAI free?","acceptedAnswer":{"@type":"Answer","text":"Yes. LeemAI, the FBISE notes and the books on StudyLeem are free to use."}},{"@type":"Question","name":"How does the LeemAI quiz work?","acceptedAnswer":{"@type":"Answer","text":"Choose your class and subject, optionally a chapter, the number of questions and the difficulty. LeemAI generates multiple-choice questions in FBISE style. When you finish you get your score, a review of every answer with explanations, and a personal study plan with suggestions."}},{"@type":"Question","name":"How does the AI paper checker work?","acceptedAnswer":{"@type":"Answer","text":"Select your class and subject, enter the total marks and upload clear photos of your solved paper. LeemAI reads your answers and gives question-wise marks, mistakes, model answers and tips. The marks are an AI estimate for practice and are not official FBISE marks."}},{"@type":"Question","name":"Does StudyLeem store my paper photos?","acceptedAnswer":{"@type":"Answer","text":"No. Photos are compressed in your browser and sent only to process your request. StudyLeem does not save them on its server, in a database or in storage. You can also remove them from your device with one tap."}},{"@type":"Question","name":"Which classes and subjects does LeemAI support?","acceptedAnswer":{"@type":"Answer","text":"Classes 9, 10, 11 and 12 of FBISE, including Physics, Chemistry, Biology, Mathematics, Computer Science, English, Urdu, Islamiat, Pakistan Studies, Economics and Statistics."}},{"@type":"Question","name":"Can I ask LeemAI in Urdu or Roman Urdu?","acceptedAnswer":{"@type":"Answer","text":"Yes. You can write in English, Urdu or Roman Urdu and LeemAI replies in the same language. You can also attach a photo of a question."}}]},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://studyleem.vercel.app/"},{"@type":"ListItem","position":2,"name":"LeemAI","item":"https://studyleem.vercel.app/leemai"}]}]}</script>
+<meta name="author" content="StudyLeem">
+<meta name="theme-color" content="#2563eb">
+<meta name="author" content="StudyLeem">
+<meta name="theme-color" content="#2563eb">
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
 <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
@@ -457,6 +462,7 @@
       <a href="/fbise" class="nav-link">FBISE</a>
       <a href="/#classes" class="nav-link">Classes</a>
       <a href="/leemai" class="nav-link active">LeemAI</a>
+      <a href="/blog" class="nav-link">Blog</a>
       <a href="/about" class="nav-link">About</a>
       <a href="/contact" class="nav-link">Contact</a>
     </nav>
@@ -480,6 +486,7 @@
   <a href="/fbise/books/11" class="mobile-nav-link"><svg class="ic" width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="/icons.svg#book"/></svg> Class 11 Books</a>
   <a href="/fbise/books/12" class="mobile-nav-link"><svg class="ic" width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="/icons.svg#book"/></svg> Class 12 Books</a>
   <a href="/leemai" class="mobile-nav-link active"><svg class="ic" width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="/icons.svg#bot"/></svg> LeemAI</a>
+  <a href="/blog" class="mobile-nav-link"><svg class="ic" width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="/icons.svg#notes"/></svg> Blog</a>
   <a href="/about" class="mobile-nav-link"><svg class="ic" width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="/icons.svg#info"/></svg> About</a>
   <a href="/contact" class="mobile-nav-link"><svg class="ic" width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="/icons.svg#mail"/></svg> Contact</a>
   <a href="/privacy" class="mobile-nav-link"><svg class="ic" width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="/icons.svg#lock"/></svg> Privacy Policy</a>
@@ -651,7 +658,7 @@
 <footer class="footer sp-footer">
   <div class="container">
     <nav class="sp-footer-links" aria-label="Footer">
-      <a href="/leemai">LeemAI AI Tutor</a><a href="/fbise">FBISE Notes &amp; Books</a><a href="/about">About Us</a><a href="/contact">Contact Us</a><a href="/privacy">Privacy Policy</a><a href="/terms">Terms of Use</a>
+      <a href="/leemai">LeemAI AI Tutor</a><a href="/fbise">FBISE Notes &amp; Books</a><a href="/blog">Study Blog</a><a href="/about">About Us</a><a href="/contact">Contact Us</a><a href="/privacy">Privacy Policy</a><a href="/terms">Terms of Use</a>
     </nav>
     <p class="sp-footer-copy">&copy; 2026 | All rights reserved by StudyLeem</p>
   </div>
