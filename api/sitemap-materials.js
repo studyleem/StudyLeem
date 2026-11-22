@@ -14,7 +14,7 @@ async function fetchAll() {
   for (let i = 0; i < 30; i++) {
     const url = `https://firestore.googleapis.com/v1/projects/${PROJECT}/databases/(default)/documents/materials?pageSize=300&key=${KEY}` +
       FIELDS.map(f => '&mask.fieldPaths=' + f).join('') + (token ? '&pageToken=' + encodeURIComponent(token) : '');
-    const r = await fetch(url);
+    const r = await fetch(url, { headers: { Referer: SITE + '/' } });
     if (!r.ok) throw new Error('Firestore ' + r.status);
     const j = await r.json();
     (j.documents || []).forEach(d => docs.push({ id: d.name.split('/').pop(), f: d.fields || {} }));
