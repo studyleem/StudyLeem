@@ -15,13 +15,13 @@ The Apps Script uses the service account, which bypasses rules, so it can always
 (If your rules are currently fully open for reads, the blog also works, but the block above is safer.)
 
 ## 2. Apps Script
-1. Open your existing Auto-Publisher project → **+ Files → Script** → name it `Blog` → paste `apps-script/Blog.gs`.
-2. Run `blogSetupCheck()` → all lines should say OK.
-3. Run `generateBlogDraftTest()` → creates ONE hidden draft. Open **Admin → Blog**, read it, then Publish or Delete.
-4. Run `createBlogTrigger()` → one new article every Monday ~8:00.
-5. Optional: Script property `BLOG_AUTO_PUBLISH = false` → articles are saved as drafts and you approve them in the admin panel.
+1. Open your Auto-Publisher project -> **+ Files -> Script** -> name it `Blog` -> paste `apps-script/Blog.gs`.
+2. Run `blogSetupCheck()` -> all lines should say OK.
+3. Run `createBlogTrigger()` -> one new article is **published automatically** every Monday ~8:00. There is no approval step.
+4. Optional: run `generateBlogNow()` to publish the first article immediately.
 
-Other helpers: `generateBlogNow()` (write one now), `blogDiagnose()` (list posts), `removeBlogTrigger()`.
+Other helpers: `blogDiagnose()` (list posts), `removeBlogTrigger()`.
+You can still edit, unpublish or delete any post later in **Admin -> Blog**.
 
 ## 3. Deploy the website
 Deploy to Vercel as usual. New URLs: `/blog`, `/blog/<slug>`, `/sitemap-blog.xml`.

@@ -79,40 +79,11 @@ function setupMobileSidebar() {
 // ── Forms ─────────────────────────────────────────
 function setupForms() {
 
-  // Material type radios (notes / books)
-  document.querySelectorAll('input[name="materialType"]').forEach(r => {
-    r.onchange = e => {
-      const isNotes = e.target.value === 'notes';
-      document.getElementById('contentTypeRow').style.display   = isNotes ? 'grid' : 'none';
-      document.getElementById('chapterGroup').style.display     = isNotes ? 'block' : 'none';
-      document.getElementById('chapterTitleGroup').style.display = isNotes ? 'block' : 'none';
-      document.getElementById('chapterNumber').required          = isNotes;
-      if (!isNotes) {
-        document.getElementById('chapterNumber').value  = '';
-        document.getElementById('chapterTitle').value   = '';
-        document.getElementById('exerciseNumber').value = '';
-        document.getElementById('exerciseRow').style.display = 'none';
-      }
-      updateExercisePreview();
-    };
-  });
-
-  // Content type radios (chapter / exercise)
-  document.querySelectorAll('input[name="contentType"]').forEach(r => {
-    r.onchange = e => {
-      const isEx = e.target.value === 'exercise', isRev = e.target.value === 'review';
-      document.getElementById('exerciseRow').style.display       = isEx ? 'grid' : 'none';
-      document.getElementById('chapterLabel').textContent        = isRev ? 'Chapter Number * (the chapter this review belongs to)' : isEx ? 'Chapter Number * (e.g. 2 for Ex 2.x)' : 'Chapter Number *';
-      document.getElementById('chapterTitleLabel').textContent   = (isEx || isRev) ? 'Exercise Title *' : 'Chapter Title *';
-      document.getElementById('chapterTitleGroup').style.display = 'block';
-      updateExercisePreview();
-    };
-  });
-
-  // Live exercise preview
-  ['chapterNumber','exerciseNumber'].forEach(id => {
-    document.getElementById(id).oninput = updateExercisePreview;
-  });
+  // Material type is WRITTEN by the admin (Notes, Book, Main Exercise, ...). Suggestions come from the data.
+  refreshTypeList();
+  document.getElementById('materialTypeText').oninput = updateTypePreview;
+  ['chapterNumber','exerciseNumber','title'].forEach(id => { document.getElementById(id).oninput = updateTypePreview; });
+  updateTypePreview();
 
   // PDF link preview
   document.getElementById('pdfLink').oninput = function () {
@@ -135,44 +106,32 @@ function setupForms() {
     statusEl.textContent = ''; statusEl.className = '';
     genUrl.style.display = 'none';
 
-    const matType     = document.querySelector('input[name="materialType"]:checked').value;
-    const radioType   = matType === 'notes' ? document.querySelector('input[name="contentType"]:checked').value : null;
-    const isReview    = radioType === 'review';
-    const contentType = radioType === null ? null : (isReview ? 'exercise' : radioType);   // review = a special kind of exercise
+    const typeText = document.getElementById('materialTypeText').value.trim();
+    const rt = SLT.resolve(typeText);
 
     const data = {
-      type:        matType,
-      contentType: contentType,
+      type:        typeText,
       title:       document.getElementById('title').value.trim(),
       class:       document.getElementById('class').value,
       subject:     document.getElementById('subject').value.trim(),
       coverImage:  document.getElementById('coverImage').value.trim(),
       pdfLink:     document.getElementById('pdfLink').value.trim(),
-      description: document.getElementById('description').value.trim()
+      description: document.getElementById('description').value.trim(),
+      chapterNumber:  parseInt(document.getElementById('chapterNumber').value) || null,
+      exerciseNumber: parseFloat(document.getElementById('exerciseNumber').value) || null,
+      chapterTitle:   document.getElementById('chapterTitle').value.trim() || null
     };
-
-    if (matType === 'notes') {
-      data.chapterNumber = parseInt(document.getElementById('chapterNumber').value) || null;
-      data.chapterTitle  = document.getElementById('chapterTitle').value.trim();
-      data.review = isReview;
-      if (contentType === 'exercise' && !isReview) {
-        data.exerciseNumber = parseFloat(document.getElementById('exerciseNumber').value) || null;
-      }
-    }
+    if (rt && rt.slug === 'notes') data.contentType = data.exerciseNumber ? 'exercise' : 'chapter';   // same behaviour as the old Notes uploads
 
     // Validate
     const errors = [];
+    if (!rt)              errors.push('Material type (use English letters, e.g. Notes, Book, Main Exercise)');
     if (!data.title)      errors.push('Title');
     if (!data.class)      errors.push('Class');
     if (!data.subject)    errors.push('Subject');
     if (!data.coverImage) errors.push('Cover Image URL');
     if (!data.pdfLink)    errors.push('PDF Link');
     if (!data.description) errors.push('Description');
-    if (matType === 'notes') {
-      if (!data.chapterNumber) errors.push('Chapter Number');
-      if (!data.chapterTitle)  errors.push('Chapter/Exercise Title');
-      if (contentType === 'exercise' && !isReview && !data.exerciseNumber) errors.push('Exercise Number');
-    }
 
     if (errors.length) {
       statusEl.textContent = 'Required: ' + errors.join(', ');
@@ -186,18 +145,9 @@ function setupForms() {
 
       const id = await DB.create(data);
 
-      // Build the clean URL for reference
-      const subSlug = toSlug(data.subject);
-      let url = '';
-      if (matType === 'notes') {
-        const chSlug = isReview ? `review-exercise-${data.chapterNumber}`
-          : contentType === 'exercise'
-          ? `exercise-${data.chapterNumber}-${data.exerciseNumber}`
-          : `chapter-${data.chapterNumber}`;
-        url = `/fbise/notes/${data.class}/${subSlug}/${chSlug}`;
-      } else {
-        url = `/fbise/books/${data.class}/${subSlug}`;
-      }
+      // Build the clean URL for reference (reads the saved item so the real slug is used)
+      const saved = await DB.getById(id);
+      const url = saved ? SLT.itemHref(saved) : `/fbise/${rt.slug}`;
 
       statusEl.textContent = 'Uploaded successfully!';
       statusEl.className   = 'status-message success';
@@ -206,14 +156,8 @@ function setupForms() {
       genUrl.style.display = 'block';
 
       document.getElementById('uploadForm').reset();
-      document.querySelector('input[name="materialType"][value="notes"]').checked = true;
-      document.querySelector('input[name="contentType"][value="chapter"]').checked = true;
-      document.getElementById('contentTypeRow').style.display = 'grid';
-      document.getElementById('chapterGroup').style.display   = 'block';
-      document.getElementById('chapterTitleGroup').style.display = 'block';
-      document.getElementById('exerciseRow').style.display    = 'none';
-      document.getElementById('pdfPreviewLink').innerHTML     = '';
-      updateExercisePreview();
+      document.getElementById('pdfPreviewLink').innerHTML = '';
+      refreshTypeList(); updateTypePreview();
       setTimeout(() => { statusEl.textContent = ''; statusEl.className = ''; }, 8000);
     } catch (err) {
       statusEl.textContent = 'Upload failed: ' + err.message;
@@ -237,18 +181,15 @@ function setupForms() {
       pdfLink:     document.getElementById('editPdfLink').value.trim(),
       description: document.getElementById('editDescription').value.trim()
     };
+    updates.chapterNumber  = parseInt(document.getElementById('editChapterNumber').value) || null;
+    updates.exerciseNumber = parseFloat(document.getElementById('editExerciseNumber').value) || null;
+    updates.chapterTitle   = document.getElementById('editChapterTitle').value.trim() || null;
     if (type === 'notes') {
-      updates.chapterNumber  = parseInt(document.getElementById('editChapterNumber').value) || null;
-      updates.exerciseNumber = parseFloat(document.getElementById('editExerciseNumber').value) || null;
-      updates.chapterTitle   = document.getElementById('editChapterTitle').value.trim();
-      // Recalculate slugs
+      // old Notes behaviour: chapter / exercise / review exercise, slug follows the numbers
       const isRev = document.getElementById('editReview').checked;
       const isEx  = isRev || !!updates.exerciseNumber;
       if (isRev) updates.exerciseNumber = null;
       updates.review = isRev;
-      updates.chapterSlug = isRev ? `review-exercise-${updates.chapterNumber}`
-        : isEx ? `exercise-${updates.chapterNumber}-${updates.exerciseNumber}`
-        : `chapter-${updates.chapterNumber}`;
       updates.contentType = isEx ? 'exercise' : 'chapter';
     }
     try {
@@ -327,21 +268,26 @@ function setupForms() {
   document.getElementById('filterMessageStatus').onchange = filterMessages;
 }
 
-function updateExercisePreview() {
-  const el  = document.getElementById('exercisePreview');
-  const ch  = document.getElementById('chapterNumber').value;
-  const ex  = document.getElementById('exerciseNumber').value;
-  const ct  = document.querySelector('input[name="contentType"]:checked');
-  if (!el || !ct) return;
-  if (ct.value === 'review' && ch) {
-    el.textContent = `Preview: Review Exercise ${ch}`;
-  } else if (ct.value === 'exercise' && ch) {
-    el.textContent = `Preview: Exercise ${ch}.${ex || '?'}`;
-  } else if (ch) {
-    el.textContent = `Preview: Chapter ${ch}`;
-  } else {
-    el.textContent = 'Preview: —';
-  }
+let knownTypes = [];
+async function refreshTypeList() {
+  try {
+    knownTypes = await DB.getTypes();
+    const names = {}; knownTypes.forEach(t => { names[t.label] = 1; });
+    ['Notes', 'Books', 'Main Exercise', 'Review Exercise', 'MCQs Explanation', 'Past Papers'].forEach(n => { names[n] = names[n] || 1; });
+    document.getElementById('typeSuggestions').innerHTML = Object.keys(names).map(n => `<option value="${escHtml(n)}"></option>`).join('');
+  } catch (_) {}
+}
+function updateTypePreview() {
+  const el = document.getElementById('typePreview'), v = document.getElementById('materialTypeText').value.trim();
+  const ch = document.getElementById('chapterNumber').value, ex = document.getElementById('exerciseNumber').value;
+  const pill = document.getElementById('exercisePreview');
+  if (pill) pill.textContent = 'Item: ' + (ch ? 'Chapter ' + ch : '—') + (ex ? ' · Exercise ' + (ch ? ch + '.' : '') + ex : '');
+  el.style.background = ''; el.style.color = '';
+  if (!v) { el.textContent = 'Type: — (write what you are uploading)'; return; }
+  const r = SLT.resolve(v);
+  if (!r) { el.textContent = 'Please write the type with English letters (e.g. "Main Exercise")'; el.style.background = '#fef2f2'; el.style.color = '#b91c1c'; return; }
+  const known = knownTypes.some(t => t.slug === r.slug);
+  el.textContent = `Shows as “${r.label}”  →  /fbise/${r.slug}` + (known ? '' : '   ✨ NEW type – a new section will appear on the homepage');
 }
 
 function closeModal(id) {
@@ -354,6 +300,9 @@ async function loadMaterials() {
   try {
     tbody.innerHTML = '<tr><td colspan="8" class="loading">Loading...</td></tr>';
     allMaterials = await DB.getAll();
+    const ft = document.getElementById('filterType'), cur = ft.value;
+    ft.innerHTML = '<option value="">All Types</option>' + SLT.typesFrom(allMaterials, { always: true }).map(t => `<option value="${escHtml(t.slug)}">${escHtml(t.label)} (${t.count})</option>`).join('');
+    ft.value = cur;
     renderTable(allMaterials);
   } catch (err) {
     tbody.innerHTML = `<tr><td colspan="8" class="loading">Error: ${escHtml(err.message)}</td></tr>`;
@@ -368,21 +317,16 @@ function renderTable(materials) {
   }
   tbody.innerHTML = materials.map(m => {
     const subSlug = m.subjectSlug || toSlug(m.subject || '');
-    let url = '';
-    if (m.type === 'notes' && m.chapterSlug) {
-      url = `/fbise/notes/${m.class}/${subSlug}/${m.chapterSlug}`;
-    } else if (m.type === 'books') {
-      url = `/fbise/books/${m.class}/${subSlug}`;
-    }
+    const url = SLT.itemHref(m);
     const chEx = m.review ? `Review Ex ${m.chapterNumber}`
       : m.contentType === 'exercise'
       ? `Ex ${m.chapterNumber}.${m.exerciseNumber || '?'}`
-      : (m.chapterNumber ? `Ch ${m.chapterNumber}` : '—');
+      : (m.chapterNumber ? `Ch ${m.chapterNumber}` + (m.exerciseNumber != null && m.exerciseNumber !== '' ? ` · Ex ${m.exerciseNumber}` : '') : '—');
     return `<tr>
       <td><img src="${escHtml(m.coverImage)}" class="material-cover-thumb"
           onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2760%27 height=%2760%27%3E%3Crect fill=%27%23f3f4f6%27 width=%2760%27 height=%2760%27/%3E%3C/svg%3E'"></td>
       <td>${escHtml(m.title)}</td>
-      <td>${m.type === 'books' ? ic('book-open') : ic('notes')} ${m.type}</td>
+      <td>${ic(SLT.icon(m.type))} ${escHtml(SLT.label(m.type, m.typeLabel))}</td>
       <td>Class ${m.class}</td>
       <td>${escHtml(m.subject)}</td>
       <td>${chEx}</td>
@@ -416,6 +360,7 @@ window.editMaterial = function(id) {
   currentEditId = id;
   document.getElementById('editId').value          = id;
   document.getElementById('editType').value         = m.type;
+  document.getElementById('editTypeShow').textContent = `${SLT.label(m.type, m.typeLabel)}  (/fbise/${m.type})`;
   document.getElementById('editTitle').value        = m.title || '';
   document.getElementById('editClass').value        = m.class || '';
   document.getElementById('editSubject').value      = m.subject || '';
@@ -423,15 +368,12 @@ window.editMaterial = function(id) {
   document.getElementById('editPdfLink').value      = m.pdfLink || '';
   document.getElementById('editDescription').value  = m.description || '';
   const chRow = document.getElementById('editChapterRow');
-  if (m.type === 'notes') {
-    chRow.style.display = 'block';
-    document.getElementById('editChapterNumber').value  = m.chapterNumber || '';
-    document.getElementById('editExerciseNumber').value = m.exerciseNumber || '';
-    document.getElementById('editReview').checked       = !!m.review;
-    document.getElementById('editChapterTitle').value   = m.chapterTitle || '';
-  } else {
-    chRow.style.display = 'none';
-  }
+  chRow.style.display = 'block';
+  document.getElementById('editChapterNumber').value  = m.chapterNumber || '';
+  document.getElementById('editExerciseNumber').value = m.exerciseNumber || '';
+  document.getElementById('editReview').checked       = !!m.review;
+  document.getElementById('editReviewRow').style.display = m.type === 'notes' ? 'flex' : 'none';
+  document.getElementById('editChapterTitle').value   = m.chapterTitle || '';
   document.getElementById('editModal').classList.add('active');
 };
 
@@ -453,6 +395,8 @@ async function loadStats() {
     document.getElementById('totalMaterialsStat').textContent = s.total;
     document.getElementById('totalBooksStat').textContent     = s.books;
     document.getElementById('totalNotesStat').textContent     = s.notes;
+    document.getElementById('typeStatsExtra').innerHTML = (s.types || []).filter(t => t.slug !== 'notes' && t.slug !== 'books')
+      .map(t => `<div class="stat-card"><div class="stat-number">${t.count}</div><div class="stat-label">${escHtml(t.label)}</div></div>`).join('');
     document.getElementById('class9Count').textContent        = s.byClass['9']  || 0;
     document.getElementById('class10Count').textContent       = s.byClass['10'] || 0;
     document.getElementById('class11Count').textContent       = s.byClass['11'] || 0;

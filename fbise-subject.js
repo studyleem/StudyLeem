@@ -36,8 +36,9 @@
     '12': 'Class 12 – HSSC Part 2'
   };
 
-  function setMeta(type, cls) {
-    const typeLabel = type === 'books' ? 'Books' : 'Notes';
+  let typeList = [];
+  function setMeta(type, cls, label) {
+    const typeLabel = label || SLT.label(type);
     const clsLabel  = classLabels[cls] || `Class ${cls}`;
     const title = `Class ${cls} FBISE ${typeLabel} – All Subjects, Free PDF | StudyLeem`;
     const desc  = `Free FBISE ${typeLabel.toLowerCase()} for ${clsLabel} (Federal Board Pakistan): chapter-wise PDFs for every subject, plus LeemAI, the AI tutor with quizzes.`;
@@ -53,15 +54,12 @@
       jsonld: [{ '@type': 'CollectionPage', name: `FBISE ${typeLabel} – ${clsLabel}`, description: desc, url: `https://studyleem.vercel.app/fbise/${type}/${cls}`, educationalLevel: clsLabel, inLanguage: 'en', isAccessibleForFree: true }]
     });
     document.getElementById('pageH1').textContent         = `FBISE ${typeLabel} – ${clsLabel}`;
-    document.getElementById('pageSubtitle').textContent   = `Select a subject to browse ${typeLabel === 'Books' ? 'textbooks' : 'chapter-wise notes'}`;
+    document.getElementById('pageSubtitle').textContent   = `Select a subject to browse ${type === 'books' ? 'textbooks' : type === 'notes' ? 'chapter-wise notes' : typeLabel.toLowerCase()}`;
     document.getElementById('breadClass').textContent     = clsLabel;
 
     // Type switcher
     const sw = document.getElementById('typeSwitcher');
-    sw.innerHTML = `
-      <a href="/fbise/notes/${cls}" class="type-switch-btn ${type==='notes'?'active':''}">${ic('notes')} Notes</a>
-      <a href="/fbise/books/${cls}" class="type-switch-btn ${type==='books'?'active':''}">${ic('book-open')} Books</a>
-    `;
+    sw.innerHTML = typeList.map(t => `<a href="/fbise/${t.slug}/${cls}" class="type-switch-btn ${t.slug === type ? 'active' : ''}">${ic(SLT.icon(t.slug))} ${escHtml(t.label)}</a>`).join('');
 
     document.getElementById('subjectsHeading').textContent = `${typeLabel} – ${clsLabel}`;
   }
@@ -72,9 +70,13 @@
       grid.innerHTML = '<div class="loading">Loading subjects...</div>';
       const materials = await DB.getByClass(cls);
       const filtered  = type === 'all' ? materials : materials.filter(m => m.type === type);
+      typeList = SLT.typesFrom(await DB.getAll(), { always: true });
+      if (!typeList.some(t => t.slug === type)) typeList.push({ slug: type, label: SLT.label(type), count: 0 });
+      const lbl = (typeList.find(t => t.slug === type) || {}).label;
+      setMeta(type, cls, lbl);
 
       if (!filtered.length) {
-        grid.innerHTML = `<p class="loading">No ${type} available for Class ${cls} yet. Check back soon!</p>`;
+        grid.innerHTML = `<p class="loading">No ${escHtml(SLT.label(type))} available for Class ${cls} yet. Check back soon!</p>`;
         return;
       }
 
@@ -91,7 +93,7 @@
 
       const subjects = Object.values(subjMap).sort((a, b) => a.name.localeCompare(b.name));
 
-      grid.innerHTML = subjects.map(s => spCard(`/fbise/${type}/${cls}/${s.slug}`, cls, s.name, type === 'books' ? 'FBISE Book' : 'FBISE Notes', s.cover)).join('');
+      grid.innerHTML = subjects.map(s => spCard(`/fbise/${type}/${cls}/${s.slug}`, cls, s.name, SLT.tag(type, lbl), s.cover)).join('');
 
     } catch (err) {
       console.error(err);
@@ -102,6 +104,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     mobileMenu();
     const { type, cls } = parsePath();
+    typeList = SLT.typesFrom([], { always: true });
     setMeta(type, cls);
     loadSubjects(type, cls);
   });

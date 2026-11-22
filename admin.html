@@ -74,41 +74,14 @@
       <div id="uploadPage" class="admin-page active">
         <div class="upload-card">
 
-          <!-- Step 1: Material Type (notes / books) -->
-          <div class="material-type-selector" style="margin-bottom:1.5rem;">
-            <label class="type-radio">
-              <input type="radio" name="materialType" value="notes" checked>
-              <span class="type-label"><span class="type-icon"><svg class="ic" width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="/icons.svg#notes"/></svg></span><span>Notes</span></span>
-            </label>
-            <label class="type-radio">
-              <input type="radio" name="materialType" value="books">
-              <span class="type-label"><span class="type-icon"><svg class="ic" width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="/icons.svg#book-open"/></svg></span><span>Books</span></span>
-            </label>
-          </div>
-
-          <!-- Step 2: Content Type (chapter / exercise) — only for notes -->
-          <div id="contentTypeRow" class="content-type-row">
-            <label class="content-type-label">
-              <input type="radio" name="contentType" value="chapter" checked>
-              <span class="ct-icon"><svg class="ic" width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="/icons.svg#book"/></svg></span>
-              <strong>Chapter Note</strong>
-              <small>e.g. Chapter 1, Chapter 2</small>
-            </label>
-            <label class="content-type-label">
-              <input type="radio" name="contentType" value="exercise">
-              <span class="ct-icon"><svg class="ic" width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="/icons.svg#calculator"/></svg></span>
-              <strong>Math Exercise</strong>
-              <small>e.g. Exercise 1.1, 2.3</small>
-            </label>
-            <label class="content-type-label">
-              <input type="radio" name="contentType" value="review">
-              <span class="ct-icon"><svg class="ic" width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="/icons.svg#clipboard"/></svg></span>
-              <strong>Review Exercise</strong>
-              <small>e.g. Review Exercise 1 (end of chapter 1)</small>
-            </label>
-          </div>
-
           <form id="uploadForm">
+            <div class="form-group" style="margin-bottom:1.2rem;">
+              <label>Which material are you uploading? * <small style="color:#6b7280;">(write it: Notes, Book, Main Exercise, Review Exercise, MCQs Explanation, Past Paper … or any new type)</small></label>
+              <input type="text" id="materialTypeText" list="typeSuggestions" required maxlength="50" autocomplete="off" placeholder="e.g. Notes  /  Book  /  Main Exercise  /  Review Exercise  /  MCQs Explanation">
+              <datalist id="typeSuggestions"></datalist>
+              <div class="preview-pill" id="typePreview">Type: — (write what you are uploading)</div>
+            </div>
+
             <div class="form-row">
               <div class="form-group">
                 <label>Title *</label>
@@ -130,25 +103,25 @@
                 <input type="text" id="subject" required placeholder="e.g. Physics, Mathematics, Chemistry">
               </div>
               <div class="form-group" id="chapterGroup">
-                <label id="chapterLabel">Chapter Number *</label>
+                <label id="chapterLabel">Chapter Number <small style="color:#6b7280;">(optional)</small></label>
                 <input type="number" id="chapterNumber" min="1" placeholder="e.g. 1">
               </div>
             </div>
 
             <!-- Exercise number — only for exercise type -->
-            <div class="form-row" id="exerciseRow" style="display:none;">
+            <div class="form-row" id="exerciseRow">
               <div class="form-group">
-                <label>Exercise Number *</label>
+                <label>Exercise Number <small style="color:#6b7280;">(optional)</small></label>
                 <input type="number" id="exerciseNumber" min="1" step="0.1" placeholder="e.g. 1 (for Ex 2.1 enter 1)">
-                <small style="color:#6b7280;">For Exercise 2.1: Chapter=2, Exercise=1</small>
+                <small style="color:#6b7280;">For Exercise 2.1: Chapter=2, Exercise=1. Leave empty if not needed.</small>
               </div>
               <div class="form-group">
-                <div class="preview-pill" id="exercisePreview">Preview: Exercise –</div>
+                <div class="preview-pill" id="exercisePreview">Item: —</div>
               </div>
             </div>
 
             <div class="form-group" id="chapterTitleGroup">
-              <label id="chapterTitleLabel">Chapter Title *</label>
+              <label id="chapterTitleLabel">Item / Chapter Name <small style="color:#6b7280;">(optional)</small></label>
               <input type="text" id="chapterTitle" placeholder="e.g. Introduction to Forces">
             </div>
 
@@ -185,7 +158,7 @@
         <div class="manage-filters">
           <input type="text" id="searchMaterials" placeholder="Search materials..." class="search-input">
           <select id="filterClass"><option value="">All Classes</option><option value="9">Class 9</option><option value="10">Class 10</option><option value="11">Class 11</option><option value="12">Class 12</option></select>
-          <select id="filterType"><option value="">All Types</option><option value="notes">Notes</option><option value="books">Books</option></select>
+          <select id="filterType"><option value="">All Types</option></select>
         </div>
         <div class="table-responsive">
           <table class="admin-table">
@@ -201,6 +174,7 @@
           <div class="stat-card"><div class="stat-number" id="totalMaterialsStat">—</div><div class="stat-label">Total Materials</div></div>
           <div class="stat-card"><div class="stat-number" id="totalBooksStat">—</div><div class="stat-label">Books</div></div>
           <div class="stat-card"><div class="stat-number" id="totalNotesStat">—</div><div class="stat-label">Notes</div></div>
+          <span id="typeStatsExtra" style="display:contents"></span>
         </div>
         <h3 style="margin:2rem 0 1rem;">By Class</h3>
         <div class="stats-grid">
@@ -297,17 +271,18 @@
     <form id="editForm">
       <input type="hidden" id="editId">
       <input type="hidden" id="editType">
+      <div class="form-group"><label>Type</label><div class="preview-pill" id="editTypeShow" style="margin-top:0">—</div></div>
       <div class="form-row">
         <div class="form-group"><label>Title *</label><input type="text" id="editTitle" required></div>
         <div class="form-group"><label>Class *</label><select id="editClass" required><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select></div>
       </div>
       <div class="form-row">
         <div class="form-group"><label>Subject *</label><input type="text" id="editSubject" required></div>
-        <div class="form-group" id="editChapterRow" style="display:none;">
+        <div class="form-group" id="editChapterRow">
           <label>Chapter Number</label><input type="number" id="editChapterNumber">
           <label style="margin-top:.5rem;">Exercise Number</label><input type="number" id="editExerciseNumber" step="0.1">
-          <label style="margin-top:.5rem;display:flex;gap:.5rem;align-items:center;"><input type="checkbox" id="editReview" style="width:auto"> This is a Review Exercise (no exercise number)</label>
-          <label style="margin-top:.5rem;">Chapter Title</label><input type="text" id="editChapterTitle">
+          <label id="editReviewRow" style="margin-top:.5rem;display:none;gap:.5rem;align-items:center;"><input type="checkbox" id="editReview" style="width:auto"> This is a Review Exercise (no exercise number)</label>
+          <label style="margin-top:.5rem;">Item / Chapter Name</label><input type="text" id="editChapterTitle">
         </div>
       </div>
       <div class="form-group"><label>Cover Image URL</label><input type="url" id="editCoverImage"></div>

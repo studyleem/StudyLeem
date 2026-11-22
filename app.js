@@ -39,6 +39,7 @@ function setupSearch() {
     await ensureLoaded();
     const hits = allMaterials.filter(m =>
       (m.title && m.title.toLowerCase().includes(q)) ||
+      (m.typeLabel && m.typeLabel.toLowerCase().includes(q)) ||
       (m.subject && m.subject.toLowerCase().includes(q)) ||
       (m.chapterTitle && m.chapterTitle.toLowerCase().includes(q))
     ).slice(0, 8);
@@ -51,11 +52,11 @@ function setupSearch() {
 
     results.innerHTML = hits.map(m => {
       const slug = m.subjectSlug || toSlug(m.subject || '');
-      const href = `/fbise/${m.type === 'books' ? 'books' : 'notes'}/${m.class}/${slug}`;
-      const icon = m.type === 'books' ? ic('book-open') : ic('notes');
+      const href = `/fbise/${m.type || 'notes'}/${m.class}/${slug}`;
+      const icon = ic(SLT.icon(m.type));
       return `<a href="${href}" class="search-result-item">
         ${icon} <strong>${escHtml(m.title)}</strong>
-        <span class="search-meta">Class ${m.class} · ${escHtml(m.subject)}</span>
+        <span class="search-meta">${escHtml(SLT.badge(m))} · Class ${m.class} · ${escHtml(m.subject)}</span>
       </a>`;
     }).join('');
     results.style.display = 'block';
@@ -96,14 +97,14 @@ function loadLatestMaterials(materials) {
 
   container.innerHTML = latest.map(m => {
     const slug = m.subjectSlug || toSlug(m.subject || '');
-    const href = `/fbise/${m.type === 'books' ? 'books' : 'notes'}/${m.class}/${slug}`;
+    const href = `/fbise/${m.type || 'notes'}/${m.class}/${slug}`;
     return `
     <a href="${href}" class="material-card">
       <div style="position:relative">
         <img src="${escHtml(m.coverImage)}" alt="${escHtml(m.title)}" class="material-cover"
           onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27208%27 height=%27300%27%3E%3Crect fill=%27%23f3f4f6%27 width=%27208%27 height=%27300%27/%3E%3Ctext x=%2750%25%27 y=%2750%25%27 text-anchor=%27middle%27 dy=%27.3em%27 fill=%27%239ca3af%27 font-family=%27Arial%27 font-size=%2714%27%3ENo Image%3C/text%3E%3C/svg%3E'"
           loading="lazy">
-        <span class="material-type-badge">${m.type === 'books' ? ic('book-open') + ' Book' : ic('notes') + ' Notes'}</span>
+        <span class="material-type-badge">${ic(SLT.icon(m.type))} ${escHtml(SLT.badge(m))}</span>
       </div>
       <div class="material-content">
         <h3 class="material-title">${escHtml(m.title)}</h3>
@@ -120,7 +121,7 @@ function loadLatestMaterials(materials) {
 
 function loadPopularSubjects(materials) {
   // two rows (notes / books): up to 6 subjects each, spread across classes 12 -> 9
-  const fill = (id, type) => {
+  const fill = (id, type, typeLabel) => {
     const box = document.getElementById(id);
     if (!box) return;
     const map = {};
@@ -139,11 +140,24 @@ function loadPopularSubjects(materials) {
       order.forEach(c => { if (picked.length < 6 && byClass[c] && byClass[c][round]) picked.push(byClass[c][round]); });
     }
     box.innerHTML = picked.length
-      ? picked.map(s => spCard(`/fbise/${type}/${s.class}/${s.slug}`, s.class, s.subject, type === 'books' ? 'FBISE Book' : 'FBISE Notes', s.cover)).join('')
-      : `<p class="loading">No ${type} yet.</p>`;
+      ? picked.map(s => spCard(`/fbise/${type}/${s.class}/${s.slug}`, s.class, s.subject, SLT.tag(type, typeLabel), s.cover)).join('')
+      : `<p class="loading">No ${escHtml(typeLabel || type)} yet.</p>`;
   };
-  fill('notesRow', 'notes');
-  fill('booksRow', 'books');
+  fill('notesRow', 'notes', 'Notes');
+  fill('booksRow', 'books', 'Books');
+
+  // every other material type that exists in the data gets its own row on the homepage (Main Exercise, MCQs Explanation, ...)
+  const extra = document.getElementById('extraTypeRows');
+  const types = SLT.typesFrom(materials).filter(t => t.slug !== 'notes' && t.slug !== 'books');
+  if (extra) {
+    extra.innerHTML = types.map(t => `<section class="section"><div class="container">
+      <div class="sp-head"><h2>FBISE ${escHtml(t.label)} (Class 9, 10, 11, 12)</h2><a href="/fbise/${t.slug}" class="sp-more">Click More ${ic('arrow-right')}</a></div>
+      <div class="sp-row" id="row-${t.slug}"><div class="loading">Loading...</div></div></div></section>`).join('');
+    types.forEach(t => fill('row-' + t.slug, t.slug, t.label));
+  }
+  // crawlable link list of all types (explore hub)
+  const hub = document.getElementById('hubTypes');
+  if (hub) hub.innerHTML += types.map(t => `<li><a href="/fbise/${t.slug}">FBISE ${escHtml(t.label)}</a></li>`).join('');
 }
 
 function updateStats(materials) {
@@ -174,7 +188,7 @@ function loadChapterLinks(materials) {
   if (!box) return;
   const seen = {}, byClass = { '9': [], '10': [], '11': [], '12': [] };
   materials.forEach(m => {
-    if (m.type === 'books' || (m.contentType && m.contentType !== 'chapter') || !m.chapterNumber) return;
+    if (m.type !== 'notes' || (m.contentType && m.contentType !== 'chapter') || !m.chapterNumber) return;
     const subj = m.subjectSlug || toSlug(m.subject || '');
     const slug = m.chapterSlug || `chapter-${m.chapterNumber}`;
     const href = `/fbise/notes/${m.class}/${subj}/${slug}`;

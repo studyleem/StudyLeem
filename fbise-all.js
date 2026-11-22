@@ -1,8 +1,8 @@
 /* All classes for one material type: /fbise/notes and /fbise/books  (opened by "Click More" on the homepage) */
 (function () {
   'use strict';
-  const type = location.pathname.split('/').filter(Boolean)[1] === 'books' ? 'books' : 'notes';
-  const T = type === 'books' ? 'Books' : 'Notes';
+  const type = (location.pathname.split('/').filter(Boolean)[1] || 'notes').toLowerCase();
+  let T = type;                                  // set from SLT / the data once the page is ready (SLT loads with firebase-client.js)
   const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   const MORE = ic('arrow-right');
   const LABEL = { '9': 'Class 9 \u2013 SSC Part 1', '10': 'Class 10 \u2013 SSC Part 2', '11': 'Class 11 \u2013 HSSC Part 1', '12': 'Class 12 \u2013 HSSC Part 2' };
@@ -21,15 +21,23 @@
     document.getElementById('pageH1').textContent = `FBISE ${T} \u2013 Class 9 to 12`;
     document.getElementById('pageSubtitle').textContent = `Every subject we have uploaded, class by class. Open "Click More" to see the full list for a class.`;
     document.getElementById('breadClass').textContent = T;
-    document.getElementById('typeSwitcher').innerHTML =
-      `<a href="/fbise/notes" class="type-switch-btn ${type === 'notes' ? 'active' : ''}">${ic('notes')} Notes</a>` +
-      `<a href="/fbise/books" class="type-switch-btn ${type === 'books' ? 'active' : ''}">${ic('book-open')} Books</a>`;
+    drawSwitcher(typeList);
+  }
+  let typeList = [];
+  function drawSwitcher(list) {
+    document.getElementById('typeSwitcher').innerHTML = list.map(t =>
+      `<a href="/fbise/${t.slug}" class="type-switch-btn ${t.slug === type ? 'active' : ''}">${ic(SLT.icon(t.slug))} ${esc(t.label)}</a>`).join('');
   }
 
   async function load() {
     const box = document.getElementById('classRows');
     try {
-      const all = (await DB.getAll()).filter(m => m.type === type);
+      const everything = await DB.getAll();
+      typeList = SLT.typesFrom(everything, { always: true });
+      if (!typeList.some(t => t.slug === type)) typeList.push({ slug: type, label: T, count: 0 });
+      const found = typeList.find(t => t.slug === type); if (found) T = found.label;
+      setMeta();
+      const all = everything.filter(m => m.type === type);
       let html = '';
       ['9', '10', '11', '12'].forEach(cls => {
         const map = {};
@@ -43,7 +51,7 @@
         html += `<section class="section" style="padding-block:1.4rem"><div class="container">
           <div class="sp-head"><h2>${esc(LABEL[cls])} ${T}</h2><a href="/fbise/${type}/${cls}" class="sp-more">Click More ${MORE}</a></div>
           ${shown.length
-            ? `<div class="sp-row">${shown.map(s => spCard(`/fbise/${type}/${cls}/${s.slug}`, cls, s.name, type === 'books' ? 'FBISE Book' : 'FBISE Notes', s.cover)).join('')}</div>`
+            ? `<div class="sp-row">${shown.map(s => spCard(`/fbise/${type}/${cls}/${s.slug}`, cls, s.name, SLT.tag(type, T), s.cover)).join('')}</div>`
             : `<p class="sp-empty">No ${T.toLowerCase()} uploaded for Class ${cls} yet. Check back soon.</p>`}
         </div></section>`;
       });
@@ -54,5 +62,5 @@
     }
   }
 
-  document.addEventListener('DOMContentLoaded', () => { setMeta(); load(); });
+  document.addEventListener('DOMContentLoaded', () => { T = SLT.label(type); typeList = SLT.typesFrom([], { always: true }); setMeta(); load(); });
 })();

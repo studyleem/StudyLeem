@@ -30,6 +30,10 @@
 <meta name="theme-color" content="#2563eb">
 <meta name="author" content="StudyLeem">
 <meta name="theme-color" content="#2563eb">
+<meta name="author" content="StudyLeem">
+<meta name="theme-color" content="#2563eb">
+<meta name="author" content="StudyLeem">
+<meta name="theme-color" content="#2563eb">
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
 <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
 <link rel="apple-touch-icon" href="/favicon-192.png">
@@ -124,6 +128,16 @@
     </div>
   </section>
 
+  <section class="section" id="byType">
+    <div class="container">
+      <h2 class="section-title">Browse by Material Type</h2>
+      <div class="classes-grid" id="typeCards">
+        <a href="/fbise/notes" class="class-card"><div class="class-icon">N</div><h3>FBISE Notes</h3><p>Chapter-wise notes for every subject</p></a>
+        <a href="/fbise/books" class="class-card"><div class="class-icon">B</div><h3>FBISE Books</h3><p>Textbooks and book chapters in PDF</p></a>
+      </div>
+    </div>
+  </section>
+
   <section class="section" style="background:#f8fafc;">
     <div class="container">
       <h2 class="section-title">Quick Access – Notes</h2>
@@ -175,5 +189,7 @@
 })();
 </script>
 <script src="/leemai-fab.js" defer></script>
+<script type="module" src="/firebase-client.js"></script>
+<script src="/fbise-types.js"></script>
 </body>
 </html>

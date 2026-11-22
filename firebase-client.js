@@ -1,5 +1,6 @@
 // StudyLeem — Firebase backend (Firestore + Auth). Loaded as <script type="module">.
 // Exposes globals used by every page: DB, Auth, Messages, toSlug.
+import { SLT } from './types.js';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import {
   getFirestore, collection, doc, getDoc, getDocs, addDoc, setDoc, updateDoc, deleteDoc,
@@ -33,7 +34,8 @@ function toSlug(s) {
     .replace(/-+/g, '-').replace(/^-|-$/g, '');
 }
 function chapterSlugOf(m) {
-  if (m.type !== 'notes') return null;
+  if (m.type === 'books') return m.chapterSlug || (m.chapterNumber != null ? SLT.genericSlug(m) : null);   // old single textbooks have no slug (URL uses book-<id>); a book PART (chapter number) gets one
+  if (m.type !== 'notes') return m.chapterSlug || SLT.genericSlug(m) || null;   // any other type: stored slug (or built from number + title)
   if (m.chapterNumber == null || m.chapterNumber === '') return toSlug(m.chapterTitle) || null;
   if (m.contentType === 'exercise') return m.review ? `review-exercise-${m.chapterNumber}` : `exercise-${m.chapterNumber}${m.exerciseNumber ? '-' + m.exerciseNumber : ''}`;
   return `chapter-${m.chapterNumber}`;
@@ -69,7 +71,13 @@ async function cached(key, fn) {
 
 function clean(b, base = {}) {
   const m = { ...base };
-  for (const k of ['type', 'contentType']) if (b[k] !== undefined) m[k] = b[k];
+  if (b.type !== undefined) {
+    const r = SLT.resolve(b.type);                       // "Main Exercise" -> exercises ; "Notes" -> notes ; custom text -> its own type
+    m.type = r ? r.slug : String(b.type || '').trim();
+    m.typeLabel = str(String(b.typeLabel || (r ? r.label : '') || ''), 60) || undefined;
+  } else if (b.typeLabel !== undefined) m.typeLabel = str(String(b.typeLabel || ''), 60);
+  if (b.contentType !== undefined) m.contentType = b.contentType;
+  if (b.chapterSlug !== undefined) m.chapterSlug = b.chapterSlug ? toSlug(String(b.chapterSlug)).slice(0, 90) : null;
   for (const [k, max] of [['title', 300], ['class', 4], ['subject', 200], ['chapterTitle', 300], ['coverImage', 2000], ['pdfLink', 2000], ['description', 5000]])
     if (b[k] !== undefined) m[k] = str(String(b[k] ?? ''), max);
   if (b.chapterNumber !== undefined) m.chapterNumber = num(b.chapterNumber, v => parseInt(v, 10));
@@ -79,27 +87,41 @@ function clean(b, base = {}) {
 }
 function validate(m) {
   const e = [];
-  if (!['notes', 'books'].includes(m.type)) e.push('type');
+  if (!SLT.isValidType(m.type)) e.push('type (use English letters/numbers, e.g. Notes, Book, Main Exercise)');
   if (!m.title) e.push('title');
   if (!['9', '10', '11', '12'].includes(String(m.class))) e.push('class');
   if (!m.subject) e.push('subject');
   for (const k of ['coverImage', 'pdfLink']) if (m[k] && !/^https?:\/\//i.test(m[k])) e.push(k + ' (must be an http/https URL)');
-  if (m.type === 'notes' && m.chapterNumber != null && Number.isNaN(m.chapterNumber)) e.push('chapterNumber');
+  if (m.chapterNumber != null && Number.isNaN(m.chapterNumber)) e.push('chapterNumber');
   if (e.length) throw new Error('Invalid: ' + e.join(', '));
 }
 function finalize(m) {
   if (m.type === 'notes' && !m.contentType) m.contentType = 'chapter';
-  if (m.type === 'books') { m.contentType = null; m.chapterNumber = null; m.exerciseNumber = null; m.chapterTitle = null; m.review = false; }
+  if (m.type === 'books') {
+    m.contentType = null; m.review = false;
+    // an old-style single textbook has no chapter info; a book part (chapter number / slug) keeps it
+    if (m.chapterNumber == null && !m.chapterSlug) { m.chapterNumber = null; m.exerciseNumber = null; m.chapterTitle = null; }
+  } else if (m.type !== 'notes') { m.contentType = null; m.review = false; }   // every other type: one flat list of items
   if (m.type === 'notes' && m.contentType !== 'exercise') m.review = false;
   if (m.review) m.exerciseNumber = null;          // a review exercise has no exercise number
   validate(m);
   return {
-    type: m.type, contentType: m.contentType ?? null, title: m.title, class: String(m.class),
+    type: m.type, typeLabel: m.typeLabel || SLT.label(m.type), contentType: m.contentType ?? null, title: m.title, class: String(m.class),
     subject: m.subject, subjectSlug: toSlug(m.subject),
     chapterNumber: m.chapterNumber ?? null, exerciseNumber: m.exerciseNumber ?? null, review: !!m.review,
     chapterTitle: m.chapterTitle ?? null, chapterSlug: chapterSlugOf(m),
     coverImage: m.coverImage || null, pdfLink: m.pdfLink || null, description: m.description || null
   };
+}
+
+/* a new-style item (any type except old notes / old single books) must have a slug nobody else uses in the same class + subject + type */
+async function uniqueItemSlug(rec) {
+  const s = await getDocs(query(collection(db, 'materials'), where('class', '==', String(rec.class))));
+  const taken = new Set(s.docs.map(fromDoc)
+    .filter(m => m.type === rec.type && (m.subjectSlug || toSlug(m.subject)) === rec.subjectSlug && m.chapterSlug).map(m => m.chapterSlug));
+  let slug = rec.chapterSlug, n = 2;
+  while (taken.has(slug)) slug = `${rec.chapterSlug.slice(0, 80)}-${n++}`;
+  return slug;
 }
 
 /* ── Materials ── */
@@ -109,6 +131,7 @@ const DB = {
   async create(data) {
     try {
       const rec = finalize(clean(data));
+      if (rec.type !== 'notes' && rec.chapterSlug) rec.chapterSlug = await uniqueItemSlug(rec);
       const ref = await addDoc(collection(db, 'materials'), { ...rec, createdAt: serverTimestamp() });
       cacheClear(); return ref.id;
     } catch (e) { throw friendly(e); }
@@ -160,10 +183,11 @@ const DB = {
       return s.exists() ? fromDoc(s) : null;
     } catch (e) { console.error('❌ Firestore:', e); return null; }
   },
+  async getTypes() { return SLT.typesFrom(await this.getAll()); },
   async getStats() {
     const items = await this.getAll();
-    const stats = { total: items.length, books: 0, notes: 0, byClass: { '9': 0, '10': 0, '11': 0, '12': 0 } };
-    items.forEach(m => { stats[m.type === 'books' ? 'books' : 'notes']++; if (stats.byClass[m.class] !== undefined) stats.byClass[m.class]++; });
+    const stats = { total: items.length, books: 0, notes: 0, byClass: { '9': 0, '10': 0, '11': 0, '12': 0 }, types: SLT.typesFrom(items, { always: true }) };
+    items.forEach(m => { if (m.type === 'books') stats.books++; else if (m.type === 'notes' || !m.type) stats.notes++; if (stats.byClass[m.class] !== undefined) stats.byClass[m.class]++; });
     return stats;
   },
 
@@ -174,13 +198,13 @@ const DB = {
       const batch = writeBatch(db);
       for (const x of items.slice(i, i + 400)) {
         try {
-          const type = x.type === 'books' ? 'books' : 'notes';
+          const r = SLT.resolve(x.type), type = r ? r.slug : 'notes';
           const rec = finalize(clean({
-            ...x, type,
+            ...x, type, typeLabel: x.typeLabel || (r ? r.label : undefined),
             class: String(x.class),
             contentType: type === 'notes' ? (x.contentType || (x.exerciseNumber ? 'exercise' : 'chapter')) : null
           }));
-          if (x.chapterSlug && type === 'notes') rec.chapterSlug = x.chapterSlug;
+          if (x.chapterSlug && type !== 'books') rec.chapterSlug = x.chapterSlug;
           const t = x.createdAt ? Timestamp.fromMillis(typeof x.createdAt === 'number' ? x.createdAt : Date.parse(x.createdAt) || Date.now()) : Timestamp.now();
           const ref = x.id ? doc(db, 'materials', String(x.id)) : doc(collection(db, 'materials'));
           batch.set(ref, { ...rec, createdAt: t });

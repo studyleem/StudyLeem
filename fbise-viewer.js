@@ -109,15 +109,18 @@
     const { type, cls, subjectSlug, chapterSlug } = parsePath();
     const subjectName = data.subject || subjectSlug.replace(/-/g, ' ');
     const isBook = type === 'books';
+    const typeLab = SLT.label(type, data.typeLabel);
+    const noun = isBook ? 'textbook' : type === 'notes' ? 'notes' : typeLab.toLowerCase();
     const subjTitle = String(subjectName).replace(/\b\w/g, c => c.toUpperCase());
     const isEx = data.contentType === 'exercise';
-    const part = isBook ? 'Book'
+    const part = isBook ? (data.chapterNumber ? `Chapter ${data.chapterNumber}` : 'Book')
+      : type !== 'notes' ? (data.chapterNumber ? `${typeLab} Chapter ${data.chapterNumber}` : data.title)
       : isEx ? (data.review ? `Review Exercise ${data.chapterNumber}` : `Exercise ${data.chapterNumber}${data.exerciseNumber ? '.' + data.exerciseNumber : ''}`)
       : data.chapterNumber ? `Chapter ${data.chapterNumber}` : data.title;
-    const h1Text = `Class ${cls} ${subjTitle} ${part} ${isBook ? 'PDF' : 'Notes PDF'}`;
+    const h1Text = `Class ${cls} ${subjTitle} ${part} ${type === 'notes' ? 'Notes PDF' : 'PDF'}`;
     const title = `${h1Text} – FBISE | StudyLeem`;
-    const desc  = `${data.title} – free FBISE ${subjectName} ${isBook ? 'textbook' : 'notes'} for Class ${cls} (Federal Board Pakistan). Read online, then practise with a LeemAI AI quiz.`;
-    const kw    = `FBISE ${subjectName} ${isBook ? 'book' : 'notes'} class ${cls}, ${data.title}, Federal Board Pakistan PDF`;
+    const desc  = `${data.title} – free FBISE ${subjectName} ${noun} for Class ${cls} (Federal Board Pakistan). Read online, then practise with a LeemAI AI quiz.`;
+    const kw    = `FBISE ${subjectName} ${isBook ? 'book' : noun} class ${cls}, ${data.title}, Federal Board Pakistan PDF`;
 
     document.getElementById('pageTitle').textContent    = title;
     document.getElementById('pageDesc').content         = desc;
@@ -128,7 +131,7 @@
       SEO.apply({
         title, description: desc, keywords: kw, canonical: `/fbise/${type}/${cls}/${subjectSlug}/${chapterSlug}`,
         breadcrumbs: [{ name: 'Home', url: '/' }, { name: 'FBISE', url: '/fbise' }, { name: `Class ${cls}`, url: `/fbise/${type}/${cls}` }, { name: subT, url: `/fbise/${type}/${cls}/${subjectSlug}` }, { name: data.title, url: `/fbise/${type}/${cls}/${subjectSlug}/${chapterSlug}` }],
-        jsonld: [{ '@type': 'LearningResource', name: h1Text, description: desc, url: `https://studyleem.vercel.app/fbise/${type}/${cls}/${subjectSlug}/${chapterSlug}`, learningResourceType: isBook ? 'Textbook' : (isEx ? 'Exercise' : 'Study notes'), educationalLevel: `Class ${cls}`, about: subT, inLanguage: 'en', isAccessibleForFree: true, provider: { '@type': 'Organization', name: 'StudyLeem', url: 'https://studyleem.vercel.app' } }]
+        jsonld: [{ '@type': 'LearningResource', name: h1Text, description: desc, url: `https://studyleem.vercel.app/fbise/${type}/${cls}/${subjectSlug}/${chapterSlug}`, learningResourceType: isBook ? 'Textbook' : type === 'notes' ? (isEx ? 'Exercise' : 'Study notes') : typeLab, educationalLevel: `Class ${cls}`, about: subT, inLanguage: 'en', isAccessibleForFree: true, provider: { '@type': 'Organization', name: 'StudyLeem', url: 'https://studyleem.vercel.app' } }]
       });
     }
     document.getElementById('docTitle').textContent     = data.title;
@@ -159,10 +162,7 @@
     tabs.innerHTML = chapters.map((ch, i) => {
       const slug   = ch.chapterSlug || makeSlug(ch);
       const href   = `/fbise/${parsePath().type}/${parsePath().cls}/${parsePath().subjectSlug}/${slug}`;
-      const isEx   = ch.contentType === 'exercise';
-      const label  = isEx
-        ? (ch.review ? `Review ${ch.chapterNumber}` : `Ex ${ch.chapterNumber}.${ch.exerciseNumber || ''}`)
-        : `Ch ${ch.chapterNumber}`;
+      const label  = SLT.tabLabel(ch);
       const active = i === _currentIdx ? 'active' : '';
       return `<a href="${href}" class="chapter-tab ${active}" data-idx="${i}"
                 title="${escHtml(ch.title)}">
@@ -202,12 +202,7 @@
     }
   }
 
-  function makeSlug(ch) {
-    if (ch.contentType === 'exercise') {
-      return ch.review ? `review-exercise-${ch.chapterNumber}` : `exercise-${ch.chapterNumber}${ch.exerciseNumber ? '-' + ch.exerciseNumber : ''}`;
-    }
-    return `chapter-${ch.chapterNumber}`;
-  }
+  function makeSlug(ch) { return SLT.itemSlug(ch); }
 
   function shortTitle(title, max) {
     if (!title) return '';
@@ -325,8 +320,9 @@
     try {
       if (type === 'books' && chapterSlug.startsWith('book-')) {
         const docId = chapterSlug.replace(/^book-/, '');
-        itemData = await DB.getById(docId);
-      } else {
+        itemData = await DB.getById(docId);                                   // old single textbooks: /book-<document id>
+      }
+      if (!itemData) {
         const items = await DB.getByChapterSlug(cls, subjectSlug, chapterSlug, type);
         if (items && items.length) itemData = items[0];
       }
@@ -367,12 +363,7 @@
       const all = await DB.getBySubjectSlug(cls, subjectSlug, type);
       if (!all || all.length < 2) return; // no nav needed for single item
       // Sort by chapterNumber then exerciseNumber
-      all.sort((a, b) => {
-        const na = Number(a.chapterNumber) || 0;
-        const nb = Number(b.chapterNumber) || 0;
-        if (na !== nb) return na - nb;
-        return (a.review ? 9999 : Number(a.exerciseNumber) || 0) - (b.review ? 9999 : Number(b.exerciseNumber) || 0);
-      });
+      all.sort(SLT.compareItems);
       buildChapterNav(all, currentSlug);
     } catch (e) {
       console.warn('Chapter nav load failed:', e);

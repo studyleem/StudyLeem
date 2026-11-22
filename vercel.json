@@ -33,35 +33,19 @@
       "destination": "/fbise.html"
     },
     {
-      "source": "/fbise/notes",
+      "source": "/fbise/:type",
       "destination": "/fbise-all.html"
     },
     {
-      "source": "/fbise/notes/:class",
+      "source": "/fbise/:type/:class",
       "destination": "/fbise-subject.html"
     },
     {
-      "source": "/fbise/books",
-      "destination": "/fbise-all.html"
-    },
-    {
-      "source": "/fbise/books/:class",
-      "destination": "/fbise-subject.html"
-    },
-    {
-      "source": "/fbise/notes/:class/:subject",
+      "source": "/fbise/:type/:class/:subject",
       "destination": "/fbise-chapters.html"
     },
     {
-      "source": "/fbise/books/:class/:subject",
-      "destination": "/fbise-chapters.html"
-    },
-    {
-      "source": "/fbise/notes/:class/:subject/:chapter",
-      "destination": "/fbise-viewer.html"
-    },
-    {
-      "source": "/fbise/books/:class/:subject/:chapter",
+      "source": "/fbise/:type/:class/:subject/:chapter",
       "destination": "/fbise-viewer.html"
     },
     {

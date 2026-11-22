@@ -36,16 +36,17 @@
   let allItems = [];
   let activeFilter = 'all';
 
+  let curLabel = '';
   function setMeta(type, cls, subjectSlug, subjectName) {
-    const typeLabel = type === 'books' ? 'Books' : 'Notes';
+    const typeLabel = curLabel || SLT.label(type);
     const clsLabel  = classLabels[cls] || `Class ${cls}`;
     const subLabel  = subjectName || subjectSlug.replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
-    const title = `${subLabel} ${type === 'books' ? 'Book' : 'Notes'} Class ${cls} FBISE – Free PDF | StudyLeem`;
+    const title = `${subLabel} ${type === 'books' ? 'Book' : type === 'notes' ? 'Notes' : typeLabel} Class ${cls} FBISE – Free PDF | StudyLeem`;
     const desc  = `Free FBISE ${subLabel} ${typeLabel.toLowerCase()} for ${clsLabel} (Federal Board Pakistan): chapter-wise PDF, plus a free LeemAI ${subLabel} quiz and AI tutor.`;
 
     document.getElementById('pageTitle').textContent    = title;
     document.getElementById('pageDesc').content         = desc;
-    document.getElementById('pageKeywords').content     = `FBISE ${subLabel} notes class ${cls}, ${subLabel} chapter wise notes FBISE, Federal Board ${cls} ${subLabel} PDF, free ${subLabel} notes Pakistan`;
+    document.getElementById('pageKeywords').content     = `FBISE ${subLabel} ${typeLabel.toLowerCase()} class ${cls}, ${subLabel} ${typeLabel.toLowerCase()} FBISE, Federal Board ${cls} ${subLabel} PDF, free ${subLabel} notes Pakistan`;
     document.getElementById('pageCanonical').href       = `https://studyleem.vercel.app/fbise/${type}/${cls}/${subjectSlug}`;
     if (window.SEO) SEO.apply({
       title, description: desc, keywords: document.getElementById('pageKeywords').content, canonical: `/fbise/${type}/${cls}/${subjectSlug}`,
@@ -55,7 +56,7 @@
     document.getElementById('pageH1').textContent       = `${subLabel} – ${typeLabel} (${clsLabel})`;
     document.getElementById('pageSubtitle').textContent = type === 'books'
       ? `FBISE Federal Board complete textbook in PDF`
-      : `FBISE Federal Board chapter-wise notes in PDF`;
+      : type === 'notes' ? `FBISE Federal Board chapter-wise notes in PDF` : `FBISE Federal Board ${typeLabel.toLowerCase()} in PDF`;
     document.getElementById('breadSubject').textContent = subLabel;
 
     const classLink = document.getElementById('breadClassLink');
@@ -84,57 +85,27 @@
     if (activeFilter === 'chapter')  display = items.filter(m => !m.contentType || m.contentType === 'chapter');
     if (activeFilter === 'exercise') display = items.filter(m => m.contentType === 'exercise');
 
-    // Sort: by chapterNumber then exerciseNumber
-    display.sort((a, b) => {
-      const nA = Number(a.chapterNumber) || 0;
-      const nB = Number(b.chapterNumber) || 0;
-      if (nA !== nB) return nA - nB;
-      return (a.review ? 9999 : Number(a.exerciseNumber) || 0) - (b.review ? 9999 : Number(b.exerciseNumber) || 0);   // review exercise comes last in its chapter
-    });
+    display.sort(SLT.compareItems);   // chapter number, then exercise number (review last), then title
 
-    // ── BOOKS: show as single clickable card (whole PDF), not chapter list ──
-    if (type === 'books') {
-      grid.innerHTML = display.map(m => {
-        const href = `/fbise/books/${cls}/${subjectSlug}/book-${m.id}`;
-        return `
-          <a href="${href}" class="chapter-item book-item${m.coverImage ? ' has-cover' : ''}" aria-label="${escHtml(m.title)}">
-            ${m.coverImage ? `<div class="chapter-thumb"><img src="${escHtml(m.coverImage)}" alt="" loading="lazy" onerror="this.parentNode.parentNode.classList.remove('has-cover');this.parentNode.remove()"></div>` : ''}
-            <div class="chapter-body">
-            <div class="chapter-num">${ic('book-open')} Full Textbook</div>
-            <div class="chapter-info">
-              <h3 class="chapter-title">${escHtml(m.title)}</h3>
-              ${m.description ? `<p class="chapter-desc">${escHtml(m.description.substring(0,120))}${m.description.length>120?'…':''}</p>` : ''}
-            </div>
-            <span class="chapter-cta">Read Book ${ic('arrow-right')}</span>
-            </div>
-          </a>
-        `;
-      }).join('');
-      return;
-    }
-
-    // ── NOTES: chapter-by-chapter list ──
+    // ── one card per item (old single textbooks keep their "Full Textbook" card) ──
     grid.innerHTML = display.map(m => {
-      const slug  = m.chapterSlug || (m.contentType === 'exercise'
-        ? (m.review ? `review-exercise-${m.chapterNumber}` : `exercise-${m.chapterNumber}${m.exerciseNumber ? '-' + m.exerciseNumber : ''}`)
-        : `chapter-${m.chapterNumber}`);
-      const href  = `/fbise/${type}/${cls}/${subjectSlug}/${slug}`;
-      const isEx  = m.contentType === 'exercise';
-      const label = isEx
-        ? (m.review ? `Review Exercise ${m.chapterNumber}` : `Exercise ${m.chapterNumber}.${m.exerciseNumber || ''}`)
-        : `Chapter ${m.chapterNumber}`;
-      const icon  = isEx ? ic('calculator') : ic('book');
-
+      const href       = `/fbise/${type}/${cls}/${subjectSlug}/${SLT.itemSlug(m)}`;
+      const legacyBook = SLT.isLegacyBook(m);
+      const isEx       = m.type === 'notes' && m.contentType === 'exercise';
+      const label      = SLT.itemLabel(m);
+      const icon       = legacyBook ? ic('book-open') : isEx ? ic('calculator') : ic(type === 'notes' ? 'book' : SLT.icon(type));
+      const cta        = legacyBook ? 'Read Book' : isEx ? 'Open Exercise' : type === 'notes' ? 'Notes + Exercise' : 'Open';
+      const clip       = legacyBook ? 120 : 100;
       return `
-        <a href="${href}" class="chapter-item${m.coverImage ? ' has-cover' : ''}" aria-label="${escHtml(label)}: ${escHtml(m.title)}">
+        <a href="${href}" class="chapter-item${legacyBook ? ' book-item' : ''}${m.coverImage ? ' has-cover' : ''}" aria-label="${escHtml(label)}: ${escHtml(m.title)}">
           ${m.coverImage ? `<div class="chapter-thumb"><img src="${escHtml(m.coverImage)}" alt="" loading="lazy" onerror="this.parentNode.parentNode.classList.remove('has-cover');this.parentNode.remove()"></div>` : ''}
           <div class="chapter-body">
           <div class="chapter-num">${icon} ${escHtml(label)}</div>
           <div class="chapter-info">
             <h3 class="chapter-title">${escHtml(m.title)}</h3>
-            ${m.description ? `<p class="chapter-desc">${escHtml(m.description.substring(0,100))}${m.description.length>100?'…':''}</p>` : ''}
+            ${m.description ? `<p class="chapter-desc">${escHtml(m.description.substring(0, clip))}${m.description.length > clip ? '…' : ''}</p>` : ''}
           </div>
-          <span class="chapter-cta">${isEx ? 'Open Exercise' : 'Notes + Exercise'} ${ic('arrow-right')}</span>
+          <span class="chapter-cta">${cta} ${ic('arrow-right')}</span>
           </div>
         </a>
       `;
@@ -158,7 +129,7 @@
     const box = document.getElementById('subjectInfo');
     if (!box) return;
     const { subjectSlug } = parsePath();
-    const isBook = type === 'books', kind = isBook ? 'Book' : 'Notes', S = escHtml(subjectName), C = escHtml(cls);
+    const isBook = type === 'books', isNotes = type === 'notes', kind = isBook ? 'Book' : isNotes ? 'Notes' : (curLabel || SLT.label(type)), S = escHtml(subjectName), C = escHtml(cls);
     const box2 = (icon, h, p) => `<div class="sp-box">${ic(icon)}<h3>${h}</h3><p>${p}</p></div>`;
     const faq = [
       [`Are these ${S} ${kind.toLowerCase()} for the FBISE Federal Board?`, `Yes. This page is for Class ${C} ${S} students following the Federal Board (FBISE) syllabus in Pakistan. Always check the latest syllabus notification from your college or the board.`],
@@ -171,12 +142,12 @@
 
     box.innerHTML = `
       <h2>Quick Answer</h2>
-      <div class="sp-quick">The <b>Class ${C} ${S} ${kind}</b> page gives FBISE students ${isBook ? 'the full textbook PDF' : 'chapter-wise study material'} for ${S}. Open any item to read it online, download the PDF, or ask LeemAI to summarize the page you are reading.
-        <div class="sp-chips"><span class="sp-chip2">Federal Board</span><span class="sp-chip2">Class ${C}</span><span class="sp-chip2">${S}</span><span class="sp-chip2">${isBook ? 'Full Textbook' : 'Chapter-Wise'}</span><span class="sp-chip2">Free PDF</span><span class="sp-chip2">AI Summaries</span></div>
+      <div class="sp-quick">The <b>Class ${C} ${S} ${kind}</b> page gives FBISE students ${isBook ? 'the full textbook PDF' : isNotes ? 'chapter-wise study material' : escHtml(kind.toLowerCase()) + ' in PDF'} for ${S}. Open any item to read it online, download the PDF, or ask LeemAI to summarize the page you are reading.
+        <div class="sp-chips"><span class="sp-chip2">Federal Board</span><span class="sp-chip2">Class ${C}</span><span class="sp-chip2">${S}</span><span class="sp-chip2">${isBook ? 'Full Textbook' : isNotes ? 'Chapter-Wise' : escHtml(kind)}</span><span class="sp-chip2">Free PDF</span><span class="sp-chip2">AI Summaries</span></div>
       </div>
       <h2>What you get</h2>
       <div class="sp-grid">
-        ${box2('notes', isBook ? 'Complete textbook' : 'Chapter-wise notes', isBook ? 'The whole book as one PDF, ready to read online.' : 'Each chapter is a separate PDF so you can jump straight to the topic you need.')}
+        ${box2('notes', isBook ? 'Complete textbook' : isNotes ? 'Chapter-wise notes' : escHtml(kind), isBook ? 'The whole book as one PDF, ready to read online.' : isNotes ? 'Each chapter is a separate PDF so you can jump straight to the topic you need.' : 'Each item is a separate PDF so you can open exactly what you need.')}
         ${box2('calculator', 'Exercise solutions', 'Where available, exercises are uploaded one by one so you can open the exact exercise.')}
         ${box2('eye', 'Online viewer', 'Read in your browser with zoom, page jump and fullscreen. No app needed.')}
         ${box2('sparkles', 'AI page summary', 'Ask LeemAI to summarize or explain the page you have open.')}
@@ -202,7 +173,7 @@
       all.forEach(m => {
         const slug = m.subjectSlug || toSlug(m.subject || '');
         const k = m.type + slug;
-        if (slug && !seen[k] && !(m.type === type && slug === subjectSlug)) { seen[k] = 1; links.push(`<a href="/fbise/${m.type === 'books' ? 'books' : 'notes'}/${cls}/${slug}">Class ${C} ${escHtml(m.subject)} (${m.type === 'books' ? 'Book' : 'Notes'})</a>`); }
+        if (slug && !seen[k] && !(m.type === type && slug === subjectSlug)) { seen[k] = 1; links.push(`<a href="/fbise/${m.type || 'notes'}/${cls}/${slug}">Class ${C} ${escHtml(m.subject)} (${escHtml(SLT.badge(m))})</a>`); }
       });
       if (links.length) document.getElementById('relatedBox').innerHTML = `<h2>Related resources</h2><div class="sp-rel">${links.slice(0, 12).join('')}</div>`;
     } catch (e) { console.warn(e); }
@@ -216,12 +187,13 @@
       allItems = await DB.getBySubjectSlug(cls, subjectSlug, type);
 
       if (!allItems.length) {
-        grid.innerHTML = `<p class="loading">No ${type === 'books' ? 'books' : 'chapters'} uploaded yet for this subject. Check back soon!</p>`;
+        grid.innerHTML = `<p class="loading">No ${type === 'books' ? 'books' : type === 'notes' ? 'chapters' : escHtml(SLT.label(type).toLowerCase())} uploaded yet for this subject. Check back soon!</p>`;
         return;
       }
 
       // Get real subject name from first item
       const subjectName = allItems[0].subject || subjectSlug;
+      curLabel = SLT.label(type, allItems[0].typeLabel);
       setMeta(type, cls, subjectSlug, subjectName);
       renderInfo(type, cls, subjectName);
 
