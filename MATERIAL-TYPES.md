@@ -30,3 +30,16 @@ Test a name any time: Apps Script -> run `testName('your-file-name.pdf')` and re
 
 ## Publishing
 Materials (Apps Script) and blog posts (Blog.gs) are saved straight to Firebase – no admin approval. 
+
+## Page layout and URLs (v3)
+| URL | Page |
+|---|---|
+| `/fbise/12` | Class 12 – all subjects (every material type) |
+| `/fbise/12/english` | **Subject page**: every uploaded material for Class 12 English as grid or list (Notes, Books, Exercises, MCQs…), then description of the subject / book / material, how to study, LeemAI links, FAQ and disclaimer |
+| `/fbise/12/english/notes/chapter-1` | **Material page**: site header + footer, PDF embedded in the page, Download button, chapter tabs + Prev/Next, description, details, related material, FAQ, disclaimer |
+| `/fbise/12/english/books/book-<id>` | Old single textbooks (same rule) |
+| `/fbise/notes`, `/fbise/notes/12` | Still exist: browse one type across classes / subjects of one class |
+| `/pdf-preview?...` | Now also has the site header/footer (noindex utility page) |
+
+Old links (`/fbise/notes/12/english`, `/fbise/notes/12/english/chapter-1`) redirect permanently (308) to the new URLs, and the pages also understand the old order if the redirect is ever missing.
+The PDF engine (`pdf-embed.js` / `StudyPDF`) was not changed. The download countdown is `DOWNLOAD_WAIT` (15 s) at the top of `material.js`.

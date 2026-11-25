@@ -33,6 +33,22 @@
       "destination": "/fbise.html"
     },
     {
+      "source": "/fbise/:class(9|10|11|12)",
+      "destination": "/fbise-subject.html"
+    },
+    {
+      "source": "/fbise/:class(9|10|11|12)/:subject",
+      "destination": "/fbise-hub.html"
+    },
+    {
+      "source": "/fbise/:class(9|10|11|12)/:subject/:type",
+      "destination": "/fbise-hub.html"
+    },
+    {
+      "source": "/fbise/:class(9|10|11|12)/:subject/:type/:slug",
+      "destination": "/material.html"
+    },
+    {
       "source": "/fbise/:type",
       "destination": "/fbise-all.html"
     },
@@ -42,11 +58,11 @@
     },
     {
       "source": "/fbise/:type/:class/:subject",
-      "destination": "/fbise-chapters.html"
+      "destination": "/fbise-hub.html"
     },
     {
       "source": "/fbise/:type/:class/:subject/:chapter",
-      "destination": "/fbise-viewer.html"
+      "destination": "/material.html"
     },
     {
       "source": "/class",
@@ -170,5 +186,17 @@
     "api/sitemap-blog.js": {
       "maxDuration": 20
     }
-  }
+  },
+  "redirects": [
+    {
+      "source": "/fbise/:type([a-z][a-z0-9-]*)/:class(9|10|11|12)/:subject/:chapter",
+      "destination": "/fbise/:class/:subject/:type/:chapter",
+      "permanent": true
+    },
+    {
+      "source": "/fbise/:type([a-z][a-z0-9-]*)/:class(9|10|11|12)/:subject",
+      "destination": "/fbise/:class/:subject",
+      "permanent": true
+    }
+  ]
 }

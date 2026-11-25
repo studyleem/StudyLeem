@@ -83,7 +83,9 @@ export function itemSlug(m) {
   if (isLegacyBook(m)) return 'book-' + m.id;
   return m.chapterSlug || genericSlug(m) || 'item-' + m.id;
 }
-export const itemHref = m => `/fbise/${m.type || 'notes'}/${m.class}/${m.subjectSlug || toSlug(m.subject)}/${itemSlug(m)}`;
+/** New URL scheme: /fbise/<class>/<subject>/<type>/<item>  (the subject page /fbise/<class>/<subject> lists every type together). */
+export const hubHref = (cls, subjectSlug) => `/fbise/${cls}/${subjectSlug}`;
+export const itemHref = m => `/fbise/${m.class}/${m.subjectSlug || toSlug(m.subject)}/${m.type || 'notes'}/${itemSlug(m)}`;
 
 /** Small heading above a title in lists. */
 export function itemLabel(m) {
@@ -111,5 +113,5 @@ export function compareItems(a, b) {
   return eA - eB || String(a.title || '').localeCompare(String(b.title || ''));
 }
 
-export const SLT = { DEFAULTS, resolve, isValidType, label, icon, tag, badge, typesFrom, isLegacyBook, genericSlug, itemSlug, itemHref, itemLabel, tabLabel, compareItems, toSlug };
+export const SLT = { hubHref, DEFAULTS, resolve, isValidType, label, icon, tag, badge, typesFrom, isLegacyBook, genericSlug, itemSlug, itemHref, itemLabel, tabLabel, compareItems, toSlug };
 if (typeof window !== 'undefined') window.SLT = SLT;

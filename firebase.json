@@ -8,8 +8,8 @@
       { "source": "/admin-secure-panel-sl786", "destination": "/admin.html" },
       { "source": "/fbise/*", "destination": "/fbise-all.html" },
       { "source": "/fbise/*/*", "destination": "/fbise-subject.html" },
-      { "source": "/fbise/*/*/*", "destination": "/fbise-chapters.html" },
-      { "source": "/fbise/*/*/*/*", "destination": "/fbise-viewer.html" }
+      { "source": "/fbise/*/*/*", "destination": "/fbise-hub.html" },
+      { "source": "/fbise/*/*/*/*", "destination": "/material.html" }
     ],
     "cleanUrls": true
   }

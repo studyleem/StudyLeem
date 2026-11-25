@@ -52,7 +52,7 @@ function setupSearch() {
 
     results.innerHTML = hits.map(m => {
       const slug = m.subjectSlug || toSlug(m.subject || '');
-      const href = `/fbise/${m.type || 'notes'}/${m.class}/${slug}`;
+      const href = SLT.itemHref(m);
       const icon = ic(SLT.icon(m.type));
       return `<a href="${href}" class="search-result-item">
         ${icon} <strong>${escHtml(m.title)}</strong>
@@ -97,7 +97,7 @@ function loadLatestMaterials(materials) {
 
   container.innerHTML = latest.map(m => {
     const slug = m.subjectSlug || toSlug(m.subject || '');
-    const href = `/fbise/${m.type || 'notes'}/${m.class}/${slug}`;
+    const href = SLT.itemHref(m);
     return `
     <a href="${href}" class="material-card">
       <div style="position:relative">
@@ -140,7 +140,7 @@ function loadPopularSubjects(materials) {
       order.forEach(c => { if (picked.length < 6 && byClass[c] && byClass[c][round]) picked.push(byClass[c][round]); });
     }
     box.innerHTML = picked.length
-      ? picked.map(s => spCard(`/fbise/${type}/${s.class}/${s.slug}`, s.class, s.subject, SLT.tag(type, typeLabel), s.cover)).join('')
+      ? picked.map(s => spCard(SLT.hubHref(s.class, s.slug), s.class, s.subject, SLT.tag(type, typeLabel), s.cover)).join('')
       : `<p class="loading">No ${escHtml(typeLabel || type)} yet.</p>`;
   };
   fill('notesRow', 'notes', 'Notes');
@@ -191,7 +191,7 @@ function loadChapterLinks(materials) {
     if (m.type !== 'notes' || (m.contentType && m.contentType !== 'chapter') || !m.chapterNumber) return;
     const subj = m.subjectSlug || toSlug(m.subject || '');
     const slug = m.chapterSlug || `chapter-${m.chapterNumber}`;
-    const href = `/fbise/notes/${m.class}/${subj}/${slug}`;
+    const href = `/fbise/${m.class}/${subj}/notes/${slug}`;
     if (seen[href] || !byClass[String(m.class)]) return;
     seen[href] = 1;
     byClass[String(m.class)].push({ href, subject: m.subject || subj, n: Number(m.chapterNumber) || 0 });

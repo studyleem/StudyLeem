@@ -51,7 +51,7 @@
         html += `<section class="section" style="padding-block:1.4rem"><div class="container">
           <div class="sp-head"><h2>${esc(LABEL[cls])} ${T}</h2><a href="/fbise/${type}/${cls}" class="sp-more">Click More ${MORE}</a></div>
           ${shown.length
-            ? `<div class="sp-row">${shown.map(s => spCard(`/fbise/${type}/${cls}/${s.slug}`, cls, s.name, SLT.tag(type, T), s.cover)).join('')}</div>`
+            ? `<div class="sp-row">${shown.map(s => spCard(SLT.hubHref(cls, s.slug), cls, s.name, SLT.tag(type, T), s.cover)).join('')}</div>`
             : `<p class="sp-empty">No ${T.toLowerCase()} uploaded for Class ${cls} yet. Check back soon.</p>`}
         </div></section>`;
       });

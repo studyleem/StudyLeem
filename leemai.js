@@ -303,7 +303,7 @@
     var wt = weakTopics();
     $('quizActions').innerHTML = (wt.length ? '<button class="lm-btn primary" id="actWeak">Practise weak topics</button>' : '') +
       '<button class="lm-btn' + (wt.length ? '' : ' primary') + '" id="actAgain">New quiz</button>' +
-      '<a class="lm-btn" href="/fbise/notes/' + esc(quiz.class) + '/' + slug(quiz.subject) + '">Open ' + esc(quiz.subject) + ' notes</a>' +
+      '<a class="lm-btn" href="/fbise/' + esc(quiz.class) + '/' + slug(quiz.subject) + '">Open ' + esc(quiz.subject) + ' study material</a>' +
       '<button class="lm-btn" id="actSetup">Change settings</button>';
     if ($('actWeak')) $('actWeak').onclick = function () { startQuiz({ chapter: wt.join(', '), difficulty: 'mixed' }); };
     $('actAgain').onclick = function () { startQuiz({ chapter: quiz.chapter }); };
