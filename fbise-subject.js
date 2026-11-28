@@ -42,7 +42,7 @@
     const typeLabel = label || SLT.label(type);
     const clsLabel  = classLabels[cls] || `Class ${cls}`;
     const all = type === 'all';
-    const title = all ? `Class ${cls} FBISE Notes, Books & Study Material – All Subjects | StudyLeem` : `Class ${cls} FBISE ${typeLabel} – All Subjects, Free PDF | StudyLeem`;
+    const title = all ? `FBISE Class ${cls} Notes, Books & Study Material (${({9:'SSC Part-I',10:'SSC Part-II',11:'HSSC Part-I',12:'HSSC Part-II'})[cls] || ''}) | StudyLeem` : `Class ${cls} FBISE ${typeLabel} – All Subjects, Free PDF | StudyLeem`;
     const desc  = all ? `Free FBISE study material for ${clsLabel} (Federal Board Pakistan): notes, books and more for every subject, plus LeemAI, the AI tutor with quizzes.` : `Free FBISE ${typeLabel.toLowerCase()} for ${clsLabel} (Federal Board Pakistan): chapter-wise PDFs for every subject, plus LeemAI, the AI tutor with quizzes.`;
     const keys  = `FBISE ${typeLabel.toLowerCase()} class ${cls}, FBISE class ${cls} ${typeLabel.toLowerCase()}, Federal Board ${cls} ${typeLabel.toLowerCase()} PDF, free FBISE class ${cls} study material Pakistan`;
 
@@ -51,7 +51,7 @@
     document.getElementById('pageKeywords').content       = keys;
     document.getElementById('pageCanonical').href         = `https://studyleem.vercel.app/fbise/${all ? '' : type + '/'}${cls}`;
     if (window.SEO) SEO.apply({
-      title, description: desc, keywords: keys, canonical: all ? `/fbise/${cls}` : `/fbise/${type}/${cls}`,
+      title, description: desc, keywords: keys, canonical: `/fbise/${cls}`,
       breadcrumbs: [{ name: 'Home', url: '/' }, { name: 'FBISE', url: '/fbise' }, ...(all ? [] : [{ name: `FBISE ${typeLabel}`, url: `/fbise/${type}` }]), { name: clsLabel, url: all ? `/fbise/${cls}` : `/fbise/${type}/${cls}` }],
       jsonld: [{ '@type': 'CollectionPage', name: `FBISE ${typeLabel} – ${clsLabel}`, description: desc, url: `https://studyleem.vercel.app/fbise/${all ? '' : type + '/'}${cls}`, educationalLevel: clsLabel, inLanguage: 'en', isAccessibleForFree: true }]
     });

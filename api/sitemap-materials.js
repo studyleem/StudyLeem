@@ -42,7 +42,8 @@ module.exports = async (req, res) => {
         add(`/fbise/${type}`, lastmod, '0.7', 'weekly');
         add(`/fbise/${type}/${cls}`, lastmod, '0.7', 'weekly');
       }
-      add(`/fbise/${type}/${cls}/${slug}`, lastmod, '0.8', 'weekly');
+      add(`/fbise/${cls}`, lastmod, '0.8', 'weekly');
+      add(`/fbise/${cls}/${slug}`, lastmod, '0.8', 'weekly');             // subject page: every type together
 
       let chSlug = val(f.chapterSlug);
       if (type === 'books' && !chSlug) chSlug = 'book-' + id;                 // old single textbooks
@@ -51,7 +52,7 @@ module.exports = async (req, res) => {
         if (n != null && val(f.contentType) === 'exercise') chSlug = val(f.review) ? `review-exercise-${n}` : `exercise-${n}${val(f.exerciseNumber) ? '-' + val(f.exerciseNumber) : ''}`;
         else if (n != null) chSlug = `chapter-${n}`;
       } else if (!chSlug) chSlug = 'item-' + id;
-      if (chSlug) add(`/fbise/${type}/${cls}/${slug}/${chSlug}`, lastmod, '0.7', 'monthly');
+      if (chSlug) add(`/fbise/${cls}/${slug}/${type}/${chSlug}`, lastmod, '0.7', 'monthly');
     }
 
     const body = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +

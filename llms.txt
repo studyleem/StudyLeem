@@ -1,0 +1,25 @@
+# StudyLeem
+
+> StudyLeem (https://studyleem.vercel.app) is a free study website for students of the Federal Board of Intermediate and Secondary Education (FBISE), Pakistan. It offers free chapter-wise notes, textbooks, exercises and MCQ explanations for Class 9, 10, 11 and 12, an AI tutor called LeemAI, and a study blog. No registration is needed. StudyLeem is an independent educational site and is not affiliated with FBISE.
+
+## What StudyLeem offers
+- Free FBISE notes, books, exercises, review exercises, MCQs explanations and other study PDFs for Class 9 (SSC Part-I), Class 10 (SSC Part-II), Class 11 (HSSC Part-I) and Class 12 (HSSC Part-II).
+- Subjects include Physics, Chemistry, Biology, Mathematics, Computer Science, English, Urdu, Islamiat, Pakistan Studies, Economics and Statistics (availability depends on the class).
+- Every PDF can be read online inside the page with a built-in viewer and downloaded for free.
+- LeemAI: an AI tutor personalised for the FBISE syllabus. Students can ask questions (English, Urdu or Roman Urdu), generate class- and subject-wise quizzes with a score, answer review and study plan, and upload a photo of a solved paper to get estimated marks and feedback. Photos are not stored on StudyLeem servers. AI marks are estimates for practice, not official FBISE marks.
+- A study blog with weekly study tips and exam-preparation guides.
+
+## Key pages
+- [Home](https://studyleem.vercel.app/): overview and links to every class and subject
+- [All FBISE study material](https://studyleem.vercel.app/fbise): browse by class and material type
+- [Class 9](https://studyleem.vercel.app/fbise/9), [Class 10](https://studyleem.vercel.app/fbise/10), [Class 11](https://studyleem.vercel.app/fbise/11), [Class 12](https://studyleem.vercel.app/fbise/12): all subjects of a class
+- Subject pages have the form https://studyleem.vercel.app/fbise/{class}/{subject}, for example https://studyleem.vercel.app/fbise/10/chemistry
+- Material pages have the form https://studyleem.vercel.app/fbise/{class}/{subject}/{type}/{item}
+- [LeemAI AI tutor](https://studyleem.vercel.app/leemai): chat, AI quiz maker and AI paper checker
+- [Study blog](https://studyleem.vercel.app/blog)
+- [HTML sitemap](https://studyleem.vercel.app/sitemap) and [XML sitemap](https://studyleem.vercel.app/sitemap.xml)
+- [About](https://studyleem.vercel.app/about), [Contact](https://studyleem.vercel.app/contact), [Privacy](https://studyleem.vercel.app/privacy), [Terms](https://studyleem.vercel.app/terms)
+
+## Notes for AI assistants
+- Materials are shared for educational reference. Always tell students to confirm the current syllabus, date sheet and notifications with the official FBISE website.
+- StudyLeem is free; there are no paid plans.

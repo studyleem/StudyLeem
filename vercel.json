@@ -34,19 +34,23 @@
     },
     {
       "source": "/fbise/:class(9|10|11|12)",
-      "destination": "/fbise-subject.html"
+      "destination": "/api/page?kind=class&class=:class"
     },
     {
       "source": "/fbise/:class(9|10|11|12)/:subject",
-      "destination": "/fbise-hub.html"
+      "destination": "/api/page?kind=hub&class=:class&subject=:subject"
     },
     {
       "source": "/fbise/:class(9|10|11|12)/:subject/:type",
-      "destination": "/fbise-hub.html"
+      "destination": "/api/page?kind=hub&class=:class&subject=:subject&type=:type"
     },
     {
       "source": "/fbise/:class(9|10|11|12)/:subject/:type/:slug",
-      "destination": "/material.html"
+      "destination": "/api/page?kind=item&class=:class&subject=:subject&type=:type&slug=:slug"
+    },
+    {
+      "source": "/sitemap",
+      "destination": "/api/page?kind=sitemap"
     },
     {
       "source": "/fbise/:type",
@@ -185,6 +189,10 @@
     },
     "api/sitemap-blog.js": {
       "maxDuration": 20
+    },
+    "api/page.js": {
+      "maxDuration": 20,
+      "includeFiles": "{fbise-hub.html,material.html,fbise-subject.html}"
     }
   },
   "redirects": [

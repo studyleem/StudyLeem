@@ -103,7 +103,7 @@
   function seo() {
     var types = SLT.typesFrom(items), S = subjectName, C = P.cls;
     var names = types.slice(0, 3).map(function (t) { return t.label; }).join(', ');
-    var title = 'Class ' + C + ' ' + S + ' – FBISE ' + names + ' (Free PDF) | StudyLeem';
+    var title = 'FBISE Class ' + C + ' ' + S + ' Notes & Books – Free PDF | StudyLeem';
     var desc = 'Free FBISE Class ' + C + ' ' + S + ' study material: ' + items.length + ' PDFs including ' + names.toLowerCase() + '. Read online, download, and practise with LeemAI, the AI tutor for Federal Board students.';
     var url = SLT.hubHref(C, P.subjectSlug);
     var kw = 'FBISE class ' + C + ' ' + S + ', class ' + C + ' ' + S + ' notes, class ' + C + ' ' + S + ' book PDF, Federal Board ' + S + ' class ' + C + ', ' + types.map(function (t) { return 'FBISE ' + S + ' ' + t.label.toLowerCase(); }).join(', ') + ', LeemAI ' + S + ' quiz, StudyLeem';
